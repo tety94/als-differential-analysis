@@ -4,7 +4,7 @@ from sklearn.svm import LinearSVC
 from xgboost import XGBClassifier
 from lightgbm import LGBMClassifier
 from catboost import CatBoostClassifier
-from tebaldi.config import random_state
+from utilities.config import random_state
 
 def get_models():
     models = {
