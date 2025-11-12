@@ -2,6 +2,8 @@
 import os
 from datetime import datetime
 
+version= 'v1.0.0'
+model_output_folder = 'models'
 # PATH
 csv_path = 'database.csv'
 output_root = './results'

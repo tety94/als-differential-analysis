@@ -1,28 +1,31 @@
 import pandas as pd
 import logging
+import joblib
+import os
+from config import version, model_output_folder
 
-def compare_models_to_baseline(model_results_df, baseline, output_folder=None):
+def compare_models_to_baseline(model_results_df, baseline, trained_pipelines, output_folder=None, key_metric='f1'):
     """
-    Confronta i modelli con la baseline dei dottori (una per ogni visita).
+    Confronta i modelli con la baseline e salva i modelli che la superano.
 
     Parametri
     ----------
     model_results_df : pd.DataFrame
-        DataFrame con le metriche dei modelli. Deve avere colonne come: ["accuracy", "f1", "precision", "recall", ...]
-        e l'indice come nome del modello.
+        DataFrame con le metriche dei modelli.
     baseline : dict
         Dizionario restituito da compute_baseline_vs_final()
-        Es: {'diagn_1_vis': {'accuracy': ..., 'f1': ..., ...}, 'second_opinion (0/1)': {...}}
+    trained_pipelines : dict
+        Dizionario {model_name: pipeline_fit} con i modelli già addestrati
     output_folder : str, optional
-        Cartella dove salvare il CSV con i risultati
+        Cartella dove salvare CSV
+    key_metric : str, default 'f1'
+        La metrica principale per decidere se salvare il modello
 
     Ritorna
     -------
     comparison_df : pd.DataFrame
-        DataFrame con confronto modelli vs baseline
     """
     logging.info("🔍 Avvio confronto modelli vs baseline")
-
     records = []
 
     for visit, base_metrics in baseline.items():
@@ -36,7 +39,7 @@ def compare_models_to_baseline(model_results_df, baseline, output_folder=None):
                     continue
                 comparison[metric] = metrics[metric] > base_metrics[metric]
 
-            # Stampa a video
+            # Stampa e log
             print(f"\n--- Modello: {model_name} ---")
             logging.info(f"\n--- Modello: {model_name} ---")
             for metric, beat in comparison.items():
@@ -53,12 +56,23 @@ def compare_models_to_baseline(model_results_df, baseline, output_folder=None):
             }
             records.append(record)
 
+            # 🔹 Salva il modello se supera la baseline sulla metrica chiave
+            if trained_pipelines is not None and model_name in trained_pipelines:
+                if comparison.get(key_metric, False):
+                    if model_output_folder:
+                        os.makedirs(model_output_folder, exist_ok=True)
+                        model_path = os.path.join(model_output_folder, f"{model_name}_{version}.joblib")
+                        joblib.dump(trained_pipelines[model_name], model_path)
+                        print(f"💾 Modello {model_name} salvato in {model_path}")
+                        logging.info(f"Modello {model_name} salvato in {model_path}")
+
     comparison_df = pd.DataFrame(records)
 
     if output_folder:
-        path = f"{output_folder}/model_vs_baseline.csv"
+        path = os.path.join(output_folder, "model_vs_baseline.csv")
         comparison_df.to_csv(path, index=False)
         print(f"\n💾 Confronto modelli vs baseline salvato in {path}")
         logging.info(f"Confronto modelli vs baseline salvato in {path}")
 
     return comparison_df
+

@@ -1,6 +1,6 @@
 import pandas as pd
 from utilities.utils import init_logging
-from utilities.config import id_cols, target_col, test_folder, forced_numerical_cols, forced_categorical_columns, binary_cols
+from config import id_cols, target_col, test_folder, forced_numerical_cols, forced_categorical_columns, binary_cols
 from utilities.data_loader import load_data
 from utilities.preprocess import convert_plus_minus, separate_columns
 from utilities.missing_report import generate_missing_report
@@ -63,9 +63,9 @@ X = impute_nulls(log, X, categorical_cols, numeric_cols)
 # 5. Modelli
 print(f"Train models")
 models = get_models()
-res_df, model_feature_importances = train_models(log, X, y, numeric_cols, categorical_cols, models, test_folder)
+res_df, model_feature_importances, trained_pipelines = train_models(log, X, y, numeric_cols, categorical_cols, models, test_folder)
 
-comparison_df = compare_models_to_baseline(res_df, baseline, output_folder=f"{test_folder}")
+comparison_df = compare_models_to_baseline(res_df, baseline,trained_pipelines, output_folder=f"{test_folder}")
 
 # 6. Grafici comparativi
 print(f"Graphics")

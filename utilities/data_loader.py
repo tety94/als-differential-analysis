@@ -1,5 +1,5 @@
 import pandas as pd
-from utilities.config import csv_path, target_col, id_cols, t_1_visit
+from config import csv_path, target_col, t_1_visit
 import logging
 
 def load_data():

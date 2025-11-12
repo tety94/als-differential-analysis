@@ -10,7 +10,7 @@ from sklearn.preprocessing import StandardScaler, OneHotEncoder
 from sklearn.impute import SimpleImputer
 from sklearn.metrics import confusion_matrix, classification_report, roc_curve, auc
 from utilities.utils import save_plot
-from utilities.config import n_splits, top_n_features
+from config import n_splits, top_n_features
 from sklearn.calibration import calibration_curve, CalibratedClassifierCV
 
 def get_feature_importances(model, feature_names):
@@ -42,6 +42,7 @@ def save_feature_importances(pipe, model_name, feature_names, folder, top_n=10):
 def train_models(log, X, y, numeric_cols, categorical_cols, models, folder):
     results = {}
     model_feature_importances = {}
+    trained_pipelines = {}
 
     num_pipeline = Pipeline([('imputer', SimpleImputer(strategy='mean')), ('scaler', StandardScaler())])
     cat_pipeline = Pipeline([('imputer', SimpleImputer(strategy='most_frequent')),
@@ -106,6 +107,9 @@ def train_models(log, X, y, numeric_cols, categorical_cols, models, folder):
         if fi_sorted is not None:
             model_feature_importances[name] = fi_sorted
 
+
+        trained_pipelines[name] = pipe  # <--- salva la pipeline fitata
+
     # ROC comparativa
     plt.plot([0, 1], [0, 1], '--', color='gray')
     plt.xlabel('False Positive Rate');
@@ -118,7 +122,7 @@ def train_models(log, X, y, numeric_cols, categorical_cols, models, folder):
     res_df = pd.DataFrame.from_dict(results, orient='index')
     res_df.to_csv(os.path.join(folder, 'model_results_summary.csv'))
 
-    return res_df, model_feature_importances
+    return res_df, model_feature_importances, trained_pipelines
 
 
 def plot_calibration_curve(y_true, y_prob, name, folder):

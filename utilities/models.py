@@ -1,10 +1,9 @@
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier, HistGradientBoostingClassifier, ExtraTreesClassifier
-from sklearn.svm import LinearSVC
 from xgboost import XGBClassifier
 from lightgbm import LGBMClassifier
 from catboost import CatBoostClassifier
-from utilities.config import random_state
+from config import random_state
 
 def get_models():
     models = {

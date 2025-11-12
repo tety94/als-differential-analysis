@@ -3,7 +3,7 @@ import seaborn as sns
 import os
 from collections import Counter
 from utilities.utils import save_plot
-from utilities.config import min_common_models
+from config import min_common_models
 
 
 def plot_comparisons(res_df, folder):
