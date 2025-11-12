@@ -42,7 +42,7 @@ def save_feature_importances(pipe, model_name, feature_names, folder, top_n=10):
 def train_models(log, X, y, numeric_cols, categorical_cols, models, folder):
     results = {}
     model_feature_importances = {}
-    trained_pipelines = {}
+    trained_pipelines = {}  # salviamo pipeline + colonne
 
     num_pipeline = Pipeline([('imputer', SimpleImputer(strategy='mean')), ('scaler', StandardScaler())])
     cat_pipeline = Pipeline([('imputer', SimpleImputer(strategy='most_frequent')),
@@ -50,14 +50,15 @@ def train_models(log, X, y, numeric_cols, categorical_cols, models, folder):
     preprocessor = ColumnTransformer([('num', num_pipeline, numeric_cols),
                                       ('cat', cat_pipeline, categorical_cols)])
 
-
     skf = StratifiedKFold(n_splits=n_splits, shuffle=True, random_state=42)
+
     for name, model in models.items():
         log(f"\n--- Modello: {name} ---")
         pipe = Pipeline([('pre', preprocessor), ('clf', model)])
 
         start_time = time.time()
 
+        # Cross-validation
         scores = cross_validate(pipe, X, y, cv=skf, scoring=['accuracy', 'f1'], n_jobs=-1)
         y_pred = cross_val_predict(pipe, X, y, cv=skf, n_jobs=-1)
 
@@ -72,12 +73,11 @@ def train_models(log, X, y, numeric_cols, categorical_cols, models, folder):
         cm = confusion_matrix(y, y_pred)
         fig, ax = plt.subplots(figsize=(6, 5))
         sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', ax=ax)
-        plt.title(f'Confusion Matrix - {name}');
-        plt.xlabel('Predicted');
+        plt.title(f'Confusion Matrix - {name}')
+        plt.xlabel('Predicted')
         plt.ylabel('True')
         save_plot(fig, os.path.join(folder, f'confusion_matrix_{name}.png'))
 
-        # ROC
         # ROC + Calibrazione
         roc_auc = float('nan')
         if hasattr(model, "predict_proba"):
@@ -87,34 +87,36 @@ def train_models(log, X, y, numeric_cols, categorical_cols, models, folder):
             plt.plot(fpr, tpr, label=f'{name} (AUC={roc_auc:.2f})')
             plot_calibration_curve(y, y_proba, name, folder)
 
-            # Calibrazione automatica per modelli non lineari
             if name in ["RandomForest", "ExtraTrees", "LightGBM", "XGBoost", "CatBoost", "GradientBoosting"]:
                 log(f"--> Calibrazione delle probabilità per {name}")
-                calibrated_pipe = Pipeline([
+                pipe = Pipeline([
                     ('pre', preprocessor),
-                    # ('calibrated_clf', CalibratedClassifierCV(model, cv=5, method='isotonic'))
                     ('clf', CalibratedClassifierCV(model, cv=5, method='isotonic'))
                 ])
-                calibrated_pipe.fit(X, y)
-                pipe = calibrated_pipe
-
-        results[name] = {'accuracy': acc_mean, 'f1': f1_mean, 'auc': roc_auc}
+                pipe.fit(X, y)
 
         # Fit finale
         pipe.fit(X, y)
+
+        # Feature importances
         feature_names_all = preprocessor.get_feature_names_out()
         fi_sorted = save_feature_importances(pipe, name, feature_names_all, folder, top_n_features)
         if fi_sorted is not None:
             model_feature_importances[name] = fi_sorted
 
+        # Salvataggio pipeline + colonne
+        trained_pipelines[name] = {
+            "pipeline": pipe,
+            "feature_columns": X.columns.tolist()
+        }
 
-        trained_pipelines[name] = pipe  # <--- salva la pipeline fitata
+        results[name] = {'accuracy': acc_mean, 'f1': f1_mean, 'auc': roc_auc}
 
     # ROC comparativa
     plt.plot([0, 1], [0, 1], '--', color='gray')
-    plt.xlabel('False Positive Rate');
+    plt.xlabel('False Positive Rate')
     plt.ylabel('True Positive Rate')
-    plt.title('ROC Curves');
+    plt.title('ROC Curves')
     plt.legend()
     save_plot(plt.gcf(), os.path.join(folder, 'roc_curves.png'))
 

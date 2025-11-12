@@ -1,5 +1,5 @@
 import pandas as pd
-from config import csv_path, target_col, t_1_visit
+from config import csv_path, target_col, t_1_visit, categorical_columns, numerical_cols, binary_cols
 import logging
 
 def load_data():
@@ -18,5 +18,6 @@ def load_data():
     df = df[~df[t_1_visit].isna()].copy()
     df[t_1_visit] = df[t_1_visit].apply(lambda x: 0 if int(x) == 0 else 1)
 
+    df = df[categorical_columns + numerical_cols + binary_cols + [target_col]]
 
     return df

@@ -13,7 +13,7 @@ def convert_plus_minus(df):
     return df.map(conv)
 
 def separate_columns(df, forced_numerical=[], forced_categorical=[], binary_cols=[]):
-    numeric_cols, categorical_cols, mixed_cols = [], [], []
+    numeric_cols, categorical_cols = [], []
     df = df.replace(',', '.', regex=True)
     for col in df.columns:
         s = df[col].astype(str).str.strip().replace({'': np.nan, 'nan': np.nan})

@@ -1,6 +1,6 @@
 import pandas as pd
 from utilities.utils import init_logging
-from config import id_cols, target_col, test_folder, forced_numerical_cols, forced_categorical_columns, binary_cols
+from config import target_col, test_folder, numerical_cols, categorical_columns, binary_cols
 from utilities.data_loader import load_data
 from utilities.preprocess import convert_plus_minus, separate_columns
 from utilities.missing_report import generate_missing_report
@@ -21,17 +21,14 @@ df = load_data()
 target_cols = ["diagn_1_vis"]
 baseline = compute_baseline_vs_final(df, target_cols, output_folder=f"{test_folder}")
 
-# Rimuove colonne ID/anagrafiche
-df.drop(columns=[c for c in id_cols if c in df.columns], inplace=True, errors='ignore')
-
 # 2. Report valori null
 missing_report = generate_missing_report(df, test_folder)
 
 # 3. Preprocessing colonne
 df = convert_plus_minus(df)
 df, numeric_cols, categorical_cols = separate_columns(df,
-                                                      forced_numerical=forced_numerical_cols,
-                                                      forced_categorical=forced_categorical_columns,
+                                                      forced_numerical=numerical_cols,
+                                                      forced_categorical=categorical_columns,
                                                       binary_cols=binary_cols)
 
 categorical_cols.remove(target_col)
@@ -41,7 +38,7 @@ y = df[target_col].astype(int)
 X = df.drop(columns=[target_col])
 
 results = correlation_analysis(X, y, output_folder=test_folder)
-X, removed_cols = drop_strongly_correlated(X, results['strong_corrs'])
+X, removed_cols, numeric_cols, categorical_cols = drop_strongly_correlated(X, results['strong_corrs'], categorical_cols, numeric_cols)
 print(f"Colonne rimosse: {removed_cols}")
 
 constant_cols = X.columns[X.nunique() <= 1].tolist()
@@ -52,9 +49,6 @@ if constant_cols:
 print(f"Null report")
 null_report = report_nulls(X)
 null_report.to_csv(f'{test_folder}/null_report.csv')
-
-numeric_cols = [c for c in numeric_cols if c in X.columns]
-categorical_cols = [c for c in categorical_cols if c in X.columns]
 
 # Imputazione dei null
 print(f"Impute null")

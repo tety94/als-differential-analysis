@@ -93,7 +93,7 @@ def correlation_analysis(X, y, output_folder, threshold=0.8):
 
 
 # Rimuove colonne fortemente correlate
-def drop_strongly_correlated(X, strong_corrs):
+def drop_strongly_correlated(X, strong_corrs, categorical_cols, numeric_cols):
     """
     Rimuove una colonna per ogni coppia di feature fortemente correlate.
     Sceglie di rimuovere la seconda colonna di ogni coppia.
@@ -104,6 +104,10 @@ def drop_strongly_correlated(X, strong_corrs):
         Dataset delle feature
     strong_corrs : pd.DataFrame
         DataFrame con colonne ['Feature_1', 'Feature_2', 'Correlation']
+    categorical_cols : list
+        Lista delle colonne categoriche
+    numeric_cols : list
+        Lista delle colonne numeriche
 
     Ritorna
     -------
@@ -111,14 +115,25 @@ def drop_strongly_correlated(X, strong_corrs):
         Dataset senza le colonne fortemente correlate
     removed_cols : list
         Lista delle colonne rimosse
+    numeric_cols_new : list
+        Lista colonne numeriche aggiornate
+    categorical_cols_new : list
+        Lista colonne categoriche aggiornate
     """
     removed_cols = []
 
     # Itera su tutte le coppie fortemente correlate
     for _, row in strong_corrs.iterrows():
-        col_to_remove = row['Feature_2']  # puoi cambiare logica se vuoi
+        col_to_remove = row['Feature_2']
         if col_to_remove in X.columns and col_to_remove not in removed_cols:
             removed_cols.append(col_to_remove)
 
+    # Drop colonne
     X_clean = X.drop(columns=removed_cols, errors='ignore')
-    return X_clean, removed_cols
+
+    # Aggiorna liste di colonne numeriche e categoriche
+    numeric_cols_new = [c for c in numeric_cols if c not in removed_cols]
+    categorical_cols_new = [c for c in categorical_cols if c not in removed_cols]
+
+    return X_clean, removed_cols, numeric_cols_new, categorical_cols_new
+
