@@ -18,7 +18,7 @@ log(f"Avvio nuovo test in {test_folder}")
 # 1. Caricamento dati
 df = load_data()
 
-target_cols = ["diagn_1_vis", "second_opinion (0/1)"]
+target_cols = ["diagn_1_vis"]
 baseline = compute_baseline_vs_final(df, target_cols, output_folder=f"{test_folder}")
 
 # Rimuove colonne ID/anagrafiche

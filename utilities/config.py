@@ -4,7 +4,7 @@ from datetime import datetime
 
 # PATH
 csv_path = 'database.csv'
-output_root = './tesi_tebaldi_results'
+output_root = './results'
 test_folder = os.path.join(output_root, f"test_{datetime.now().strftime('%Y%m%d_%H%M%S')}")
 os.makedirs(test_folder, exist_ok=True)
 

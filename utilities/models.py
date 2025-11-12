@@ -12,7 +12,7 @@ def get_models():
         'RandomForest': RandomForestClassifier(n_estimators=200, random_state=random_state, class_weight='balanced', n_jobs=-1),
         'GradientBoosting': GradientBoostingClassifier(n_estimators=200, random_state=random_state),
         'HistGradientBoosting': HistGradientBoostingClassifier(max_iter=200, random_state=random_state),
-        'XGBoost': XGBClassifier(eval_metric="logloss", use_label_encoder=False, random_state=random_state, n_jobs=-1),
+        'XGBoost': XGBClassifier(eval_metric="logloss", random_state=random_state, n_jobs=-1),
         'LightGBM': LGBMClassifier(class_weight="balanced", random_state=random_state, n_jobs=-1),
         'CatBoost': CatBoostClassifier(verbose=0, random_state=random_state, class_weights=[1,2]),
         'ExtraTrees': ExtraTreesClassifier(n_estimators=300, random_state=random_state, class_weight="balanced", n_jobs=-1),
