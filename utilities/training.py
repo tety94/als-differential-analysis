@@ -11,7 +11,7 @@ from sklearn.impute import SimpleImputer
 from sklearn.metrics import confusion_matrix, classification_report, roc_curve, auc
 from utilities.utils import save_plot
 from utilities.config import n_splits, top_n_features
-
+from sklearn.calibration import calibration_curve, CalibratedClassifierCV
 
 def get_feature_importances(model, feature_names):
     if hasattr(model, "feature_importances_"):
@@ -77,12 +77,25 @@ def train_models(log, X, y, numeric_cols, categorical_cols, models, folder):
         save_plot(fig, os.path.join(folder, f'confusion_matrix_{name}.png'))
 
         # ROC
+        # ROC + Calibrazione
         roc_auc = float('nan')
         if hasattr(model, "predict_proba"):
             y_proba = cross_val_predict(pipe, X, y, cv=skf, method='predict_proba')[:, 1]
             fpr, tpr, _ = roc_curve(y, y_proba)
             roc_auc = auc(fpr, tpr)
             plt.plot(fpr, tpr, label=f'{name} (AUC={roc_auc:.2f})')
+            plot_calibration_curve(y, y_proba, name, folder)
+
+            # Calibrazione automatica per modelli non lineari
+            if name in ["RandomForest", "ExtraTrees", "LightGBM", "XGBoost", "CatBoost", "GradientBoosting"]:
+                log(f"--> Calibrazione delle probabilità per {name}")
+                calibrated_pipe = Pipeline([
+                    ('pre', preprocessor),
+                    # ('calibrated_clf', CalibratedClassifierCV(model, cv=5, method='isotonic'))
+                    ('clf', CalibratedClassifierCV(model, cv=5, method='isotonic'))
+                ])
+                calibrated_pipe.fit(X, y)
+                pipe = calibrated_pipe
 
         results[name] = {'accuracy': acc_mean, 'f1': f1_mean, 'auc': roc_auc}
 
@@ -106,3 +119,17 @@ def train_models(log, X, y, numeric_cols, categorical_cols, models, folder):
     res_df.to_csv(os.path.join(folder, 'model_results_summary.csv'))
 
     return res_df, model_feature_importances
+
+
+def plot_calibration_curve(y_true, y_prob, name, folder):
+    prob_true, prob_pred = calibration_curve(y_true, y_prob, n_bins=10)
+    plt.figure(figsize=(5, 5))
+    plt.plot(prob_pred, prob_true, marker='o', label=name)
+    plt.plot([0, 1], [0, 1], '--', color='gray')
+    plt.xlabel('Probabilità predetta')
+    plt.ylabel('Frazione reale di positivi')
+    plt.title(f'Calibrazione - {name}')
+    plt.legend()
+    plt.tight_layout()
+    plt.savefig(os.path.join(folder, f'calibration_{name}.png'))
+    plt.close()
