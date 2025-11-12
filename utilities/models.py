@@ -15,7 +15,6 @@ def get_models():
         'XGBoost': XGBClassifier(eval_metric="logloss", random_state=random_state, n_jobs=-1),
         'LightGBM': LGBMClassifier(class_weight="balanced", random_state=random_state, n_jobs=-1),
         'CatBoost': CatBoostClassifier(verbose=0, random_state=random_state, class_weights=[1,2]),
-        'ExtraTrees': ExtraTreesClassifier(n_estimators=300, random_state=random_state, class_weight="balanced", n_jobs=-1),
-        'LinearSVC': LinearSVC(class_weight="balanced", random_state=random_state)
+        'ExtraTrees': ExtraTreesClassifier(n_estimators=300, random_state=random_state, class_weight="balanced", n_jobs=-1)
     }
     return models
