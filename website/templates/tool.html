@@ -1,0 +1,303 @@
+<section id="tool">
+
+    <form method="post" id="predictForm" action="/predict">
+        <div class="row g-3">
+            <div class="nice-form-group col-lg-4">
+                <label for="site_of_onset">Sito d'esordio</label>
+                <select id="site_of_onset" name="site_of_onset">
+                    <option value="">-- Seleziona --</option>
+                    <option value="0">0</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                </select>
+            </div>
+
+            <div class="nice-form-group col-lg-4">
+                <label for="phenotype">Fenotipo d'esordio</label>
+                <select id="phenotype" name="phenotype">
+                    <option value="">-- Seleziona --</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                </select>
+            </div>
+
+            <div class="nice-form-group col-lg-4">
+                <label for="type_onset">Tipo d'esordio</label>
+                <select id="type_onset" name="type_onset">
+                    <option value="">-- Seleziona --</option>
+                    <option value="0">0</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                </select>
+            </div>
+
+            <div class="nice-form-group col-lg-4">
+                <label for="side_of_onset">Sito d'esordio</label>
+                <select id="side_of_onset" name="side_of_onset">
+                    <option value="">-- Seleziona --</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                </select>
+            </div>
+
+            <div class="nice-form-group col-lg-4">
+                <label for="elescorial_class">Sito d'esordio</label>
+                <select id="elescorial_class" name="elescorial_class">
+                    <option value="">-- Seleziona --</option>
+                    <option value="0">0</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                </select>
+            </div>
+
+            <div class="nice-form-group col-lg-4">
+                <label for="diagn_1_vis">Diagnosi prima visita</label>
+                <select id="diagn_1_vis" name="diagn_1_vis">
+                    <option value="">-- Seleziona --</option>
+                    <option value="0">0</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                </select>
+            </div>
+
+            <div class="nice-form-group col-lg-4">
+                <label>Età (in anni)</label>
+                <input type="number" id="age_onset" name="age_onset" min="0" placeholder="Età">
+            </div>
+
+            <div class="nice-form-group col-lg-4">
+                <label>Delay (in mesi)</label>
+                <input type="number" id="delay" name="delay" min="0" placeholder="Delay">
+            </div>
+
+            <div class="nice-form-group col-lg-4">
+                <label>HBW (in kg)</label>
+                <input type="number" id="hbw" name="hbw" min="0" placeholder="HBW">
+            </div>
+
+            <div class="nice-form-group col-lg-4">
+                <label>Peso attuale (in kg)</label>
+                <input type="number" id="weight_diagnosis" name="weight_diagnosis" min="0" placeholder="Peso attuale"
+                >
+            </div>
+
+            <div class="nice-form-group col-lg-4">
+                <label>Δ Peso (in kg)</label>
+                <input type="number" id="delta_weight" name="delta_weight" min="0" placeholder="Δ Peso">
+            </div>
+
+            <div class="nice-form-group col-lg-4">
+                <label>ALSFRS prima visita</label>
+                <input type="number" id="alsfrs_evalutation_1_visit" name="alsfrs_evalutation_1_visit" min="0"
+                       placeholder="ALSFRS prima visita">
+            </div>
+
+            <div class="nice-form-group col-lg-4">
+                <label>Δ-ALSFRS</label>
+                <input type="number" id="delta_alsfrs" name="delta_alsfrs" min="0" placeholder="Δ-ALSFRS">
+            </div>
+
+            <div class="nice-form-group col-lg-4">
+                <label>ALSFRS Bulbare</label>
+                <input type="number" id="alsfrs_bulb" name="alsfrs_bulb" min="0" placeholder="ALSFRS Bulbare">
+            </div>
+
+            <div class="nice-form-group col-lg-4">
+                <label>ALSFRS Arti superiori</label>
+                <input type="number" id="alsfrs_aass" name="alsfrs_aass" min="0" placeholder="ALSFRS Arti superiori"
+                >
+            </div>
+
+            <div class="nice-form-group col-lg-4">
+                <label>ALSFRS Arti inferiori</label>
+                <input type="number" id="alsfrs_aaii" name="alsfrs_aaii" min="0" placeholder="ALSFRS Arti inferiori"
+                >
+            </div>
+
+            <div class="nice-form-group col-lg-4">
+                <label>ALSFRS respiratorio</label>
+                <input type="number" id="alsfrs_resp" name="alsfrs_resp" min="0" placeholder="ALSFRS respiratorio"
+                >
+            </div>
+
+            <div class="nice-form-group col-lg-4">
+                <label>FVC %</label>
+                <input type="number" id="fvc" name="fvc" min="0" placeholder="FVC %">
+            </div>
+
+            <div class="nice-form-group col-lg-4">
+                <label>CK</label>
+                <input type="number" id="ck" name="ck" min="0" placeholder="CK">
+            </div>
+
+            <div class="nice-form-group col-lg-4">
+                <label>Torino totale</label>
+                <input type="number" id="turin_tot" name="turin_tot" min="0" placeholder="Torino totale">
+            </div>
+
+            <div class="nice-form-group col-lg-4">
+                <label>Torino lower MN</label>
+                <input type="number" id="turin_lower_mn" name="turin_lower_mn" min="0" placeholder="Torino lower MN"
+                >
+            </div>
+
+            <div class="nice-form-group col-lg-4">
+                <label>Siti coinvolti</label>
+                <div class="nice-form-group">
+                    <input type="radio" name="n_site" id="n_site-1">
+                    <label for="n_site-1">1</label>
+                </div>
+                <div class="nice-form-group col-lg-4">
+                    <input type="radio" name="n_site" id="n_site-2">
+                    <label for="n_site-2">2</label>
+                </div>
+                <div class="nice-form-group">
+                    <input type="radio" name="n_site" id="n_site-3">
+                    <label for="n_site-3">3</label>
+                </div>
+                <div class="nice-form-group">
+                    <input type="radio" name="n_site" id="n_site-4">
+                    <label for="n_site-4">4</label>
+                </div>
+            </div>
+
+            <div class="nice-form-group col-lg-4">
+                <label>Sesso</label>
+                <div class="nice-form-group">
+                    <input type="radio" name="sex" id="sex-1">
+                    <label for="sex-1">Maschio</label>
+                </div>
+                <div class="nice-form-group">
+                    <input type="radio" name="sex" id="sex-2">
+                    <label for="sex-2">Femmina</label>
+                </div>
+            </div>
+
+            <div class="nice-form-group col-lg-4">
+                <input type="checkbox" id="familiarity" class="switch">
+                <label>Familiarità</label>
+            </div>
+
+            <div class="nice-form-group col-lg-4">
+                <input type="checkbox" id="second_opinion" class="switch">
+                <label>Seconda opinione</label>
+            </div>
+
+            <div class="nice-form-group col-lg-4">
+                <input type="checkbox" id="em_lability" class="switch">
+                <label>em_lability</label>
+            </div>
+
+            <div class="nice-form-group col-lg-4">
+                <input type="checkbox" id="cramps" class="switch">
+                <label>Crampi</label>
+            </div>
+
+            <div class="nice-form-group col-lg-4">
+                <input type="checkbox" id="fasciculation" class="switch">
+                <label>Fascicolazioni</label>
+            </div>
+
+            <div class="nice-form-group col-lg-4">
+                <input type="checkbox" id="progression" class="switch">
+                <label>Progressione</label>
+            </div>
+
+            <div class="nice-form-group col-lg-4">
+                <input type="checkbox" id="emg" class="switch">
+                <label>EMG</label>
+            </div>
+
+            <div class="nice-form-group col-lg-4">
+                <input type="checkbox" id="eng" class="switch">
+                <label>ENG</label>
+            </div>
+
+            <div class="nice-form-group col-lg-4">
+                <input type="checkbox" id="igm_borellina" class="switch">
+                <label>IGM Borellia</label>
+            </div>
+
+            <div class="nice-form-group col-lg-4">
+                <input type="checkbox" id="igg_borellina" class="switch">
+                <label>IGG Borellia</label>
+            </div>
+
+            <div class="nice-form-group col-lg-4">
+                <input type="checkbox" id="wb_borellina" class="switch">
+                <label>WB Borellia</label>
+            </div>
+
+            <div class="nice-form-group col-lg-4">
+                <input type="checkbox" id="brain_mri_mnd" class="switch">
+                <label>brain_mri_mnd</label>
+            </div>
+
+            <div class="nice-form-group col-lg-4">
+                <input type="checkbox" id="brain_mri_other" class="switch">
+                <label>brain_mri_other</label>
+            </div>
+
+            <div class="nice-form-group col-lg-4">
+                <input type="checkbox" id="spine_mri" class="switch">
+                <label>spine_mri</label>
+            </div>
+
+            <div class="nice-form-group col-lg-4">
+                <input type="checkbox" id="pet" class="switch">
+                <label>pet</label>
+            </div>
+
+            <div class="nice-form-group col-lg-4">
+                <input type="checkbox" id="test_neuro" class="switch">
+                <label>test_neuro</label>
+            </div>
+
+            <div class="nice-form-group col-lg-4">
+                <input type="checkbox" id="genetic_status" class="switch">
+                <label>genetic_status</label>
+            </div>
+
+            <div class="nice-form-group col-lg-4">
+                <input type="checkbox" id="tongue_atrophy" class="switch">
+                <label>tongue_atrophy</label>
+            </div>
+
+        </div>
+
+        <div class="row">
+        <div class="mt-3">
+            <button type="submit" id="submit" class="toggle-code  col-lg-4">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                     class="feather feather-code">
+                    <polyline points="16 18 22 12 16 6"></polyline>
+                    <polyline points="8 6 2 12 8 18"></polyline>
+                </svg>
+                Calcola
+            </button>
+        </div>
+        </div>
+    </form>
+
+    <div id="resultsBox">
+    </div>
+
+</section>

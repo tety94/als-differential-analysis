@@ -24,3 +24,10 @@ n_splits = 5
 random_state = 42
 top_n_features = 2
 min_common_models = 5
+
+#connessione database
+DB_USER = ""
+DB_PASS = ""
+DB_HOST = ""
+DB_PORT = "3306"
+DB_NAME = ""

@@ -1,0 +1,22 @@
+.toggle-code {
+  display: inline-block;
+  padding: 0.5em 1em;
+  border-radius: 5px;
+  font-size: 0.875rem;
+  background: #10b981;
+  top: 1em;
+  right: 1em;
+  color: #fff;
+  font-weight: 500;
+  -webkit-user-select: none;
+  user-select: none;
+  cursor: pointer;
+}
+.toggle-code:hover {
+  background: #0ea271;
+}
+.toggle-code svg {
+  display: inline-block;
+  vertical-align: -15%;
+  margin-right: 0.25em;
+}
