@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Float, Boolean, DateTime, Text
+from sqlalchemy import Column, Integer, String, Float, Boolean, DateTime, Text, JSON
 from sqlalchemy.ext.declarative import declarative_base
 from datetime import datetime
 
@@ -57,10 +57,20 @@ class PatientPrediction(Base):
     tongue_atrophy = Column(Boolean, default=False)
 
     # risultati dei modelli salvati come JSON (string)
-    results = Column(Text)
-
-    result_ok = Column(Float)
-    result_ko = Column(Float)
+    results = Column(JSON)
+    model_input = Column(JSON)
+    model_log = Column(JSON)
 
     # timestamp
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
+class Model(Base):
+    __tablename__ = "models"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    model_name = Column(String, nullable=False)
+    model_version = Column(String, nullable=False)
+    model_params = Column(JSON, nullable=True)
+    type_i = Column(String, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)

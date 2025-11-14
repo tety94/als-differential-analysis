@@ -3,6 +3,7 @@ import time
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+import numpy as np
 from sklearn.model_selection import StratifiedKFold, cross_validate, cross_val_predict
 from sklearn.pipeline import Pipeline
 from sklearn.compose import ColumnTransformer
@@ -13,30 +14,65 @@ from utilities.utils import save_plot
 from config import n_splits, top_n_features
 from sklearn.calibration import calibration_curve, CalibratedClassifierCV
 
+
 def get_feature_importances(model, feature_names):
+    """
+    Restituisce una Series di importanze o coefficienti assoluti, se disponibili.
+    """
     if hasattr(model, "feature_importances_"):
         return pd.Series(model.feature_importances_, index=feature_names)
+
     elif hasattr(model, "coef_"):
         coefs = model.coef_
         if coefs.ndim == 1:
-            return pd.Series(abs(coefs), index=feature_names)
+            return pd.Series(np.abs(coefs), index=feature_names)
         else:
-            return pd.Series(abs(coefs).mean(axis=0), index=feature_names)
+            # media assoluta tra le classi nel caso multiclasse
+            return pd.Series(np.abs(coefs).mean(axis=0), index=feature_names)
+
+    elif hasattr(model, "best_estimator_"):
+        # in caso di GridSearchCV o simili
+        return get_feature_importances(model.best_estimator_, feature_names)
+
     return None
+
 
 
 def save_feature_importances(pipe, model_name, feature_names, folder, top_n=10):
-    fi = get_feature_importances(pipe.named_steps['clf'], feature_names)
-    if fi is not None:
-        fi_sorted = fi.sort_values(ascending=False).head(top_n)
-        fig, ax = plt.subplots(figsize=(8, 6))
-        fi_sorted[::-1].plot(kind='barh', ax=ax)
-        plt.title(f'Feature Importance - {model_name}')
-        plt.tight_layout()
-        save_plot(fig, os.path.join(folder, f'feature_importance_{model_name}.png'))
-        fi_sorted.to_csv(os.path.join(folder, f'top_{top_n}_features_{model_name}.csv'))
-        return fi_sorted
-    return None
+    """
+    Salva e disegna le feature importances o i coefficienti di un modello sklearn, se disponibili.
+    """
+    # Estrae il modello finale dal pipeline
+    model = pipe.named_steps.get('clf', None)
+    if model is None:
+        print(f"[WARN] Nessun classificatore trovato nel pipeline per {model_name}")
+        return None
+
+    # Ottiene le feature importances o i coefficienti
+    fi = get_feature_importances(model, feature_names)
+
+    if fi is None:
+        print(f"[WARN] Nessuna feature importance trovata per modello {model_name}")
+        return None
+
+    print(f"[INFO] Salvate feature importances per {model_name}")
+
+    # Ordina e seleziona le top N
+    fi_sorted = fi.sort_values(ascending=False).head(top_n)
+
+    # Plot orizzontale
+    fig, ax = plt.subplots(figsize=(8, 6))
+    fi_sorted[::-1].plot(kind='barh', ax=ax)
+    ax.set_title(f'Feature Importance - {model_name}')
+    ax.set_xlabel('Importance')
+    plt.tight_layout()
+
+    # Salva grafico e CSV
+    save_plot(fig, os.path.join(folder, f'feature_importance_{model_name}.png'))
+    fi_sorted.to_csv(os.path.join(folder, f'top_{top_n}_features_{model_name}.csv'))
+
+    return fi_sorted
+
 
 
 def train_models(log, X, y, numeric_cols, categorical_cols, models, folder):
@@ -52,8 +88,10 @@ def train_models(log, X, y, numeric_cols, categorical_cols, models, folder):
 
     skf = StratifiedKFold(n_splits=n_splits, shuffle=True, random_state=42)
 
+
     for name, model in models.items():
         log(f"\n--- Modello: {name} ---")
+        # print(f"\n--- Modello: {name} ---")
         pipe = Pipeline([('pre', preprocessor), ('clf', model)])
 
         start_time = time.time()
@@ -87,14 +125,6 @@ def train_models(log, X, y, numeric_cols, categorical_cols, models, folder):
             plt.plot(fpr, tpr, label=f'{name} (AUC={roc_auc:.2f})')
             plot_calibration_curve(y, y_proba, name, folder)
 
-            if name in ["RandomForest", "ExtraTrees", "LightGBM", "XGBoost", "CatBoost", "GradientBoosting"]:
-                log(f"--> Calibrazione delle probabilità per {name}")
-                pipe = Pipeline([
-                    ('pre', preprocessor),
-                    ('clf', CalibratedClassifierCV(model, cv=5, method='isotonic'))
-                ])
-                pipe.fit(X, y)
-
         # Fit finale
         pipe.fit(X, y)
 
@@ -104,9 +134,28 @@ def train_models(log, X, y, numeric_cols, categorical_cols, models, folder):
         if fi_sorted is not None:
             model_feature_importances[name] = fi_sorted
 
+        # estrai il modello finale già fit-tato
+        base_clf = pipe.named_steps["clf"]
+
+        # calibra su X, y (o su un validation split separato)
+        calibrated = CalibratedClassifierCV(base_clf, method="isotonic", cv='prefit')
+        calibrated.fit(pipe.named_steps['pre'].transform(X), y)
+
+        # crea pipeline finale con il modello calibrato
+        final_pipe = Pipeline([
+            ('pre', preprocessor),
+            ('clf', calibrated)
+        ])
+
+        # proba = final_pipe.predict_proba(X.iloc[[0]])
+        # print('proba')
+        # print(proba)
+        # exit()
+
+
         # Salvataggio pipeline + colonne
         trained_pipelines[name] = {
-            "pipeline": pipe,
+            "pipeline": final_pipe,
             "feature_columns": X.columns.tolist()
         }
 

@@ -1,6 +1,6 @@
 import pandas as pd
 from utilities.utils import init_logging
-from config import target_col, test_folder, numerical_cols, categorical_columns, binary_cols
+from config import target_col, test_folder, numerical_cols, categorical_columns, binary_cols, t_1_visit
 from utilities.data_loader import load_data
 from utilities.preprocess import convert_plus_minus, separate_columns
 from utilities.missing_report import generate_missing_report
@@ -18,8 +18,8 @@ log(f"Avvio nuovo test in {test_folder}")
 # 1. Caricamento dati
 df = load_data()
 
-target_cols = ["diagn_1_vis"]
-baseline = compute_baseline_vs_final(df, target_cols, output_folder=f"{test_folder}")
+baseline_cols = [t_1_visit]
+baseline = compute_baseline_vs_final(df, baseline_cols, output_folder=f"{test_folder}")
 
 # 2. Report valori null
 missing_report = generate_missing_report(df, test_folder)
@@ -32,10 +32,12 @@ df, numeric_cols, categorical_cols = separate_columns(df,
                                                       binary_cols=binary_cols)
 
 categorical_cols.remove(target_col)
+categorical_cols.remove(t_1_visit) #rimuovo la colonna diagonsi prima visita
 
 # 4. Separazione X / y
 y = df[target_col].astype(int)
 X = df.drop(columns=[target_col])
+X = X.drop(columns=baseline_cols) #rimuovo la colonna diagonsi prima visita
 
 results = correlation_analysis(X, y, output_folder=test_folder)
 X, removed_cols, numeric_cols, categorical_cols = drop_strongly_correlated(X, results['strong_corrs'], categorical_cols, numeric_cols)

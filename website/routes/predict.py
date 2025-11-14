@@ -1,14 +1,15 @@
 from flask import Blueprint, request, jsonify
 from sqlalchemy.orm import sessionmaker
-from website.models import Base, PatientPrediction
-from website.db_connection import engine  # connessione centralizzata
+from website.models import PatientPrediction
+from website.db_connection import engine
 import pandas as pd
 import joblib
 import os
 import json
 from datetime import datetime
-from website.utilities import clean_numeric
+import numpy as np
 from config import version
+from website.utilities import clean_for_model, clean_for_db
 
 predict_bp = Blueprint('predict', __name__)
 
@@ -16,103 +17,166 @@ Session = sessionmaker(bind=engine)
 ML_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), '../models')
 pipelines = {}
 
+
+
 @predict_bp.route('/predict', methods=['POST'])
 def predict():
-    # dati inviati dal form come JSON
     form_data = request.get_json()
     print("📦 Dati ricevuti:", form_data)
 
     session = Session()
 
-    # Campi numerici
     numeric_fields = [
         'age_onset', 'delay', 'hbw', 'weight_diagnosis', 'delta_weight',
         'alsfrs_evalutation_1_visit', 'delta_alsfrs', 'alsfrs_bulb',
         'alsfrs_aass', 'alsfrs_aaii', 'alsfrs_resp', 'fvc', 'ck',
         'turin_tot', 'turin_lower_mn'
     ]
-
-    for field in numeric_fields:
-        form_data[field] = clean_numeric(form_data.get(field), float)
-
     categorical_fields = [
         'site_of_onset', 'phenotype', 'type_onset', 'side_of_onset',
-        'elescorial_class', 'diagn_1_vis', 'n_site', 'sex'
-    ]
-    for field in categorical_fields:
-        form_data[field] = clean_numeric(form_data.get(field), float)
-
-    # Campi booleani (checkbox)
-    bool_fields = [
+        'elescorial_class', 'diagn_1_vis', 'n_site', 'sex',
         'familiarity', 'second_opinion', 'em_lability', 'cramps',
         'fasciculation', 'progression', 'emg', 'eng', 'igm_borellina',
         'igg_borellina', 'wb_borellina', 'brain_mri_mnd', 'brain_mri_other',
         'spine_mri', 'pet', 'test_neuro', 'genetic_status', 'tongue_atrophy'
+
     ]
+    bool_fields = [
+    ]
+
+    # crea due dizionari: uno per DB, uno per modello
+    db_data = {}
+    model_data = {}
+
+    for field in numeric_fields + categorical_fields:
+        db_data[field] = clean_for_db(form_data.get(field))
+        model_data[field] = clean_for_model(form_data.get(field))
+
     for field in bool_fields:
-        form_data[field] = bool(form_data.get(field))
+        val = bool(form_data.get(field))
+        db_data[field] = val
+        model_data[field] = int(val)
 
-    radio_fields = ["n_site", "sex"]
-
-    for rf in radio_fields:
-        val = form_data.get(rf)
-        print(val)
-        exit()
-        if val is None or val == "":
-            form_data[rf] = None
-        else:
-            try:
-                form_data[rf] = int(val)
-            except ValueError:
-                form_data[rf] = val
-
-    # crea oggetto paziente e salva DB
-    patient = PatientPrediction(**form_data)
+    # salva paziente nel DB
+    patient = PatientPrediction(**db_data)
     session.add(patient)
     session.commit()
 
-    # prepara dataframe per predizione
-    input_df = pd.DataFrame([form_data])
+    # predizione
+    rename_map = {
+        'age_onset': 'age_onset (y)',
+        'delay': 'delay (m)',
+        'hbw': 'HBW (kg)',
+        'weight_diagnosis': 'weight_diagnosis',
+        'alsfrs_evalutation_1_visit': 'alsfrs_evalutation_1_visit',
+        'delta_alsfrs': 'Δalsfrs',
+        'alsfrs_bulb': 'alsfrs_bulb',
+        'alsfrs_aass': 'alsfrs_aass',
+        'alsfrs_aaii': 'alsfrs_aaii',
+        'alsfrs_resp': 'alsfrs_resp.',
+        'fvc': 'fvc (%)',
+        'ck': 'ck (valore)',
+        'turin_tot': 'Turin_tot',
+        'turin_lower_mn': 'Turin_lower_MN',
+        'site_of_onset': 'site_of_onset',
+        'phenotype': 'phenotype (1-8)',
+        'type_onset': 'type_onset (0-4)',
+        'side_of_onset': 'side_of_onset',
+        'elescorial_class': 'elescorial_class (0-3)',
+        'diagn_1_vis': 'diagn_1_vis',
+        'sex': 'sex (M/F)',
+        'familiarity': 'familiarity_MND/demenza/psich./Paget (0/1)',
+        'second_opinion': 'second_opinion (0/1)',
+        'em_lability': 'em_lability (0/1)',
+        'cramps': 'cramps (0/1)',
+        'fasciculation': 'fasciculation (0/1)',
+        'progression': 'progression (0/1)',
+        'emg': 'emg (0/1)',
+        'eng': 'eng (0/1)',
+        'igm_borellina': 'IgM Borrelia (0/1)',
+        'igg_borellina': 'IgG Borrelia (0/1)',
+        'wb_borellina': 'WB_Borrelia (0/1)',
+        'brain_mri_mnd': 'brain_mri_mnd (0/1)',
+        'brain_mri_other': 'brain_mri_other (0/1)',
+        'spine_mri': 'spine_mri (0/1)',
+        'pet': 'pet (0/1)',
+        'test_neuro': 'test_neuro (0/1)',
+        'genetic_status': 'genetic_status',
+        'tongue_atrophy': 'tongue_atrophy',
+        'delta_weight' :'Δweight (kg)',
+        'n_site' : 'n_site (0/4)',
+    }
 
-    # lista dei modelli che vuoi usare
-    models_to_use = ["LogisticRegression","RandomForest", "GradientBoosting",
-                     "HistGradientBoosting", "XGBoost", "LightGBM", "CatBoost", "ExtraTrees"]
+    model_data_renamed = {rename_map.get(k, k): v for k, v in model_data.items()}
+    input_df = pd.DataFrame([model_data_renamed])
 
     results = {}
+    model_outputs = {}
+    model_outputs["input_summary"] = input_df.describe().to_dict()
+
+    models_to_use = ["LogisticRegression", "RandomForest", "GradientBoosting", "HistGradientBoosting",
+                     "XGBoost", "LightGBM", "CatBoost", "ExtraTrees"]
+
     for model_name in models_to_use:
         model_filename = f"{model_name}_{version}.joblib"
         model_path = os.path.join(ML_DIR, model_filename)
-        # carica il modello se non è già in memoria
-        if model_name not in pipelines and os.path.exists(model_path):
-            model_dict = joblib.load(model_path)
-            pipelines[model_name] = model_dict
 
+        # carica modello se non già in memoria
+        if model_name not in pipelines and os.path.exists(model_path):
+            pipelines[model_name] = joblib.load(model_path)
         if model_name not in pipelines:
             continue
 
-        # prendi pipeline e feature columns dal dizionario
         pipe = pipelines[model_name]["pipeline"]
-        feature_cols = pipelines[model_name]["feature_columns"]
 
-        # riallinea il dataframe alle colonne usate in training
-        input_df_aligned = input_df.reindex(columns=feature_cols, fill_value=0)
-
-        # predizione
-        pred_class = int(pipe.predict(input_df_aligned)[0])
-        try:
-            pred_proba = float(pipe.predict_proba(input_df_aligned)[0, 1])
-        except AttributeError:
-            # alcuni modelli (es. HistGradientBoosting) usano predict_proba direttamente
-            pred_proba = float(pipe.predict_proba(input_df_aligned)[0][1])
+        # passiamo direttamente i dati grezzi alla pipeline, senza riallineamento manuale
+        pred_class = int(pipe.predict(input_df)[0])
+        pred_proba = pipe.predict_proba(input_df)[0][pred_class]
 
         results[model_name] = {"class": pred_class, "probability": pred_proba}
 
-    # salva risultati come JSON
-    patient.results = json.dumps(results)
-    patient.result_ok = 0 #TODO: mettere media dei valori degli algoritmi
-    patient.result_ko = 0 #TODO: mettere media dei valori degli algoritmi
+        model_outputs[model_name] = {
+            "pred_class": pred_class,
+            "pred_proba": pred_proba,
+            "timestamp": datetime.utcnow().isoformat(),
+            # "user_id": current_user.id,
+            "feature_names": list(input_df.columns),
+            # "model_version": model.version,
+            # "model_params": model.get_params(),
+        }
+
+        if hasattr(pipe, "named_steps"):
+            transformed = pipe.named_steps["pre"].transform(input_df)
+            model_outputs[model_name]["transformed_input"] = transformed.tolist()
+
+        # Pulisce i dati da NaN e tipi numpy
+        model_outputs[model_name] = clean(model_outputs[model_name])
+
+    # salva risultati nel DB
+    patient.results = results
+
+    df = input_df.copy()
+    for col in df.select_dtypes(bool).columns:
+        df[col] = df[col].astype(int)
+    record_dict = clean(df.to_dict(orient='records')[0])
+    patient.model_input = record_dict
+
+    patient.model_log = model_outputs
     patient.created_at = datetime.utcnow()
     session.commit()
     session.close()
 
     return jsonify({"success": True, "results": results})
+
+def clean(obj):
+    """Converte numpy, NaN e altri tipi non JS-friendly in oggetti Python standard."""
+    if isinstance(obj, dict):
+        return {k: clean(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [clean(v) for v in obj]
+    elif isinstance(obj, float) and np.isnan(obj):
+        return None
+    elif isinstance(obj, np.generic):
+        return obj.item()
+    else:
+        return obj
