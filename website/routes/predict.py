@@ -112,13 +112,13 @@ def predict():
 
     results = {}
     model_outputs = {}
-    model_outputs["input_summary"] = input_df.describe().to_dict()
 
     models_to_use = ["LogisticRegression", "RandomForest", "GradientBoosting", "HistGradientBoosting",
                      "XGBoost", "LightGBM", "CatBoost", "ExtraTrees"]
 
     for model_name in models_to_use:
-        model_filename = f"{model_name}_{version}.joblib"
+        #TODO: SISTEMARE PATH
+        model_filename = f"third_level/{model_name}_{version}.joblib"
         model_path = os.path.join(ML_DIR, model_filename)
 
         # carica modello se non già in memoria
@@ -160,6 +160,8 @@ def predict():
         df[col] = df[col].astype(int)
     record_dict = clean(df.to_dict(orient='records')[0])
     patient.model_input = record_dict
+
+    model_outputs["input_summary"] = record_dict
 
     patient.model_log = model_outputs
     patient.created_at = datetime.utcnow()
