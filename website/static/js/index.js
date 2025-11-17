@@ -11,7 +11,7 @@ document.addEventListener("DOMContentLoaded", function () {
     resultsBox.innerHTML = `<div class="alert alert-info">Calcolo in corso...</div>`;
 
     try {
-      const response = await fetch("/predict", {
+      const response = await fetch("/als-differential-analysis/predict", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
