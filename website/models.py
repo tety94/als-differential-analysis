@@ -68,8 +68,8 @@ class Model(Base):
     __tablename__ = "models"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    name = Column(String, nullable=False)
-    version = Column(String, nullable=False)
+    name = Column(String(255), nullable=False)
+    version = Column(String(255), nullable=False)
     params = Column(JSON, nullable=True)
-    type = Column(String, nullable=True)
+    type = Column(String(255), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
