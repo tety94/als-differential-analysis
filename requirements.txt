@@ -9,3 +9,4 @@ catboost
 SQLAlchemy
 Flask>=2.3
 pymysql
+gunicorn

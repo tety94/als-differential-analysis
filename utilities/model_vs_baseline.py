@@ -2,9 +2,9 @@ import pandas as pd
 import logging
 import joblib
 import os
-from config import version, model_output_folder
+from config import version
 
-def compare_models_to_baseline(model_results_df, baseline, trained_pipelines, output_folder=None, key_metric='f1'):
+def compare_models_to_baseline(model_results_df, baseline, trained_pipelines, output_folder=None, key_metric='f1', model_output_folder= None):
     """
     Confronta i modelli con la baseline e salva i modelli che la superano.
 

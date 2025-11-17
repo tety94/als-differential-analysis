@@ -1,8 +1,8 @@
 import pandas as pd
-from config import csv_path, target_col, t_1_visit, categorical_columns, numerical_cols, binary_cols
+from config import csv_path, target_col, t_1_visit
 import logging
 
-def load_data():
+def load_data(categorical_columns,numerical_cols, binary_cols):
     logging.info(f"Caricamento dati da {csv_path}")
     df = pd.read_csv(csv_path, sep=',', engine='python')
     logging.info(f"Shape originale: {df.shape}")

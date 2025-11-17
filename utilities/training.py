@@ -91,7 +91,6 @@ def train_models(log, X, y, numeric_cols, categorical_cols, models, folder):
 
     for name, model in models.items():
         log(f"\n--- Modello: {name} ---")
-        # print(f"\n--- Modello: {name} ---")
         pipe = Pipeline([('pre', preprocessor), ('clf', model)])
 
         start_time = time.time()
@@ -115,6 +114,15 @@ def train_models(log, X, y, numeric_cols, categorical_cols, models, folder):
         plt.xlabel('Predicted')
         plt.ylabel('True')
         save_plot(fig, os.path.join(folder, f'confusion_matrix_{name}.png'))
+
+        tn, fp, fn, tp = cm.ravel()
+
+        # Sensitivity (recall) della classe 0
+        sensitivity_0 = tn / (tn + fp)  # vero negativo / (vero negativo + falso positivo)
+
+        # Specificity della classe 0
+        specificity_0 = tn / (tn + fn)  # vero negativo / (vero negativo + falso negativo)
+        log(f"sensitivity_0: {sensitivity_0:.4f} | specificity_0: {specificity_0:.4f}")
 
         # ROC + Calibrazione
         roc_auc = float('nan')
@@ -146,12 +154,6 @@ def train_models(log, X, y, numeric_cols, categorical_cols, models, folder):
             ('pre', preprocessor),
             ('clf', calibrated)
         ])
-
-        # proba = final_pipe.predict_proba(X.iloc[[0]])
-        # print('proba')
-        # print(proba)
-        # exit()
-
 
         # Salvataggio pipeline + colonne
         trained_pipelines[name] = {

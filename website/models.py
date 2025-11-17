@@ -61,7 +61,6 @@ class PatientPrediction(Base):
     model_input = Column(JSON)
     model_log = Column(JSON)
 
-    # timestamp
     created_at = Column(DateTime, default=datetime.utcnow)
 
 
@@ -69,8 +68,8 @@ class Model(Base):
     __tablename__ = "models"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    model_name = Column(String, nullable=False)
-    model_version = Column(String, nullable=False)
-    model_params = Column(JSON, nullable=True)
-    type_i = Column(String, nullable=True)
+    name = Column(String, nullable=False)
+    version = Column(String, nullable=False)
+    params = Column(JSON, nullable=True)
+    type = Column(String, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
