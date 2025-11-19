@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ current_lang }}" data-lang="{{ current_lang }}">
 
 <head>
     <meta charset="UTF-8">
@@ -30,4 +30,5 @@ https://codepen.io/NielsVoogt/pen/eYBQpPR
 {% include 'bibliography.html' %}
 {% include 'footer.html' %}
 
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
 <script src="{{ url_for('static', filename='js/index.js') }}"></script>
