@@ -74,7 +74,6 @@ def save_feature_importances(pipe, model_name, feature_names, folder, top_n=10):
     return fi_sorted
 
 
-
 def train_models(log, X, y, numeric_cols, categorical_cols, models, folder):
     results = {}
     model_feature_importances = {}
@@ -87,7 +86,6 @@ def train_models(log, X, y, numeric_cols, categorical_cols, models, folder):
                                       ('cat', cat_pipeline, categorical_cols)])
 
     skf = StratifiedKFold(n_splits=n_splits, shuffle=True, random_state=42)
-
 
     for name, model in models.items():
         log(f"\n--- Modello: {name} ---")
@@ -133,29 +131,39 @@ def train_models(log, X, y, numeric_cols, categorical_cols, models, folder):
             plt.plot(fpr, tpr, label=f'{name} (AUC={roc_auc:.2f})')
             plot_calibration_curve(y, y_proba, name, folder)
 
-        # Fit finale
+        # ============================================================
+        # FIT FINALE E CALIBRAZIONE
+        # ============================================================
+
+        # 1. Fit della pipeline completa
         pipe.fit(X, y)
 
-        # Feature importances
-        feature_names_all = preprocessor.get_feature_names_out()
+        # 2. Estrai il preprocessor già fittato
+        fitted_preprocessor = pipe.named_steps['pre']
+
+        # 3. Estrai il modello base già fittato
+        base_clf = pipe.named_steps['clf']
+
+        # 4. Trasforma i dati con il preprocessor fittato
+        X_transformed = fitted_preprocessor.transform(X)
+
+        # 5. Calibra SOLO il classificatore sui dati già preprocessati
+        calibrated = CalibratedClassifierCV(base_clf, method="isotonic", cv='prefit')
+        calibrated.fit(X_transformed, y)
+
+        # 6. Crea pipeline finale con preprocessor fittato + modello calibrato
+        final_pipe = Pipeline([
+            ('pre', fitted_preprocessor),
+            ('clf', calibrated)
+        ])
+
+        # Feature importances (sul modello base, prima della calibrazione)
+        feature_names_all = fitted_preprocessor.get_feature_names_out()
         fi_sorted = save_feature_importances(pipe, name, feature_names_all, folder, top_n_features)
         if fi_sorted is not None:
             model_feature_importances[name] = fi_sorted
 
-        # estrai il modello finale già fit-tato
-        base_clf = pipe.named_steps["clf"]
-
-        # calibra su X, y (o su un validation split separato)
-        calibrated = CalibratedClassifierCV(base_clf, method="isotonic", cv='prefit')
-        calibrated.fit(pipe.named_steps['pre'].transform(X), y)
-
-        # crea pipeline finale con il modello calibrato
-        final_pipe = Pipeline([
-            ('pre', preprocessor),
-            ('clf', calibrated)
-        ])
-
-        # Salvataggio pipeline + colonne
+        # Salvataggio pipeline calibrata + colonne
         trained_pipelines[name] = {
             "pipeline": final_pipe,
             "feature_columns": X.columns.tolist()
