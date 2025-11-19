@@ -163,6 +163,43 @@ def train_models(log, X, y, numeric_cols, categorical_cols, models, folder):
         if fi_sorted is not None:
             model_feature_importances[name] = fi_sorted
 
+        # ============================================================
+        # GRAFICI CON MODELLO CALIBRATO
+        # ============================================================
+
+        # Predizioni con modello calibrato
+        y_pred_calibrated = final_pipe.predict(X)
+        y_proba_calibrated = final_pipe.predict_proba(X)[:, 1]
+
+        # Confusion Matrix con modello calibrato
+        cm_calibrated = confusion_matrix(y, y_pred_calibrated)
+        fig_cm_cal, ax_cm_cal = plt.subplots(figsize=(6, 5))
+        sns.heatmap(cm_calibrated, annot=True, fmt='d', cmap='Greens', ax=ax_cm_cal)
+        plt.title(f'Confusion Matrix (Calibrated) - {name}')
+        plt.xlabel('Predicted')
+        plt.ylabel('True')
+        save_plot(fig_cm_cal, os.path.join(folder, f'confusion_matrix_calibrated_{name}.png'))
+
+        # ROC con modello calibrato
+        fpr_cal, tpr_cal, _ = roc_curve(y, y_proba_calibrated)
+        roc_auc_calibrated = auc(fpr_cal, tpr_cal)
+
+        fig_roc_cal, ax_roc_cal = plt.subplots(figsize=(8, 6))
+        ax_roc_cal.plot(fpr_cal, tpr_cal, label=f'{name} Calibrated (AUC={roc_auc_calibrated:.3f})', linewidth=2)
+        ax_roc_cal.plot([0, 1], [0, 1], '--', color='gray', label='Random')
+        ax_roc_cal.set_xlabel('False Positive Rate')
+        ax_roc_cal.set_ylabel('True Positive Rate')
+        ax_roc_cal.set_title(f'ROC Curve (Calibrated) - {name}')
+        ax_roc_cal.legend()
+        ax_roc_cal.grid(alpha=0.3)
+        save_plot(fig_roc_cal, os.path.join(folder, f'roc_curve_calibrated_{name}.png'))
+
+        # Calibration Curve con modello calibrato
+        plot_calibration_curve(y, y_proba_calibrated, f"{name}_calibrated", folder)
+
+        log(f"📊 Grafici calibrati salvati per {name}")
+        log(f"   - AUC calibrato: {roc_auc_calibrated:.4f}")
+
         # Salvataggio pipeline calibrata + colonne
         trained_pipelines[name] = {
             "pipeline": final_pipe,

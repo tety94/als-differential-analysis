@@ -32,8 +32,8 @@ def common_features_plot(model_feature_importances, folder):
         fig, ax = plt.subplots(figsize=(8, 6))
         counts = [common_counts[f] for f in common_features]
         sns.barplot(x=counts, y=common_features, ax=ax)
-        plt.xlabel('Numero di modelli');
-        plt.title(f'Feature comuni in almeno {min_common_models} modelli')
+        plt.xlabel('Number of models');
+        plt.title(f'Feature at least in {min_common_models} models')
         plt.tight_layout()
         save_plot(fig, os.path.join(folder, 'common_features.png'))
 
