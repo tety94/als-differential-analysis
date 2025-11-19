@@ -116,9 +116,9 @@ def predict():
     models_to_use = ["LogisticRegression", "RandomForest", "GradientBoosting", "HistGradientBoosting",
                      "XGBoost", "LightGBM", "CatBoost", "ExtraTrees"]
 
+    model_type = form_data.get('model_type')
     for model_name in models_to_use:
-        #TODO: SISTEMARE PATH
-        model_filename = f"third_level/{model_name}_{version}.joblib"
+        model_filename = f"{model_type}/{model_name}_{version}.joblib"
         model_path = os.path.join(ML_DIR, model_filename)
 
         # carica modello se non già in memoria

@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, session, redirect, url_for
 from flask_babel import Babel, _
 from website.routes.predict import predict_bp
+from config import SECRET_KEY
 
 # --- Crea l'app Flask ---
 app = Flask(
@@ -12,7 +13,7 @@ app = Flask(
 
 app.config['BABEL_DEFAULT_LOCALE'] = 'it'
 app.config['BABEL_SUPPORTED_LOCALES'] = ['it', 'en']
-app.config['SECRET_KEY'] = 'your-secret-key-here-change-in-production'  # necessario per session
+app.config['SECRET_KEY'] = SECRET_KEY
 
 
 # --- Inizializza Babel ---

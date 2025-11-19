@@ -31,3 +31,5 @@ DB_PASS = ""
 DB_HOST = ""
 DB_PORT = "3306"
 DB_NAME = ""
+
+SECRET_KEY=""

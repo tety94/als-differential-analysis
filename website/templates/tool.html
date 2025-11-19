@@ -3,8 +3,18 @@
     <form method="post" id="predictForm" action="/predict">
         <div class="row g-3">
 
+            <!-- Selezione Modello -->
+            <div class="nice-form-group col-12">
+                <label for="model_type">{{ _('Tipo di Modello') }}</label>
+                <select id="model_type" name="model_type" class="form-select">
+                    <option value="third_level">{{ _('Third Level') }}</option>
+                    <option value="neurologi">{{ _('Neurologi') }}</option>
+                    <option value="medici_base">{{ _('Medici Base') }}</option>
+                </select>
+            </div>
+
             <!-- Sito d'esordio -->
-            <div class="nice-form-group col-lg-4">
+            <div class="nice-form-group col-lg-4 third_level neurologi">
                 <label for="site_of_onset">{{ _('Sito d\'esordio') }}</label>
                 <select id="site_of_onset" name="site_of_onset">
                     <option value="">{{ _('Non disponibile') }}</option>
@@ -15,7 +25,7 @@
             </div>
 
             <!-- Fenotipo d'esordio -->
-            <div class="nice-form-group col-lg-4">
+            <div class="nice-form-group col-lg-4 third_level">
                 <label for="phenotype">{{ _('Fenotipo d\'esordio') }}</label>
                 <select id="phenotype" name="phenotype">
                     <option value="">{{ _('Non disponibile') }}</option>
@@ -26,7 +36,7 @@
             </div>
 
             <!-- Tipo d'esordio -->
-            <div class="nice-form-group col-lg-4">
+            <div class="nice-form-group col-lg-4 third_level neurologi medici_base">
                 <label for="type_onset">{{ _('Tipo d\'esordio') }}</label>
                 <select id="type_onset" name="type_onset">
                     <option value="">{{ _('Non disponibile') }}</option>
@@ -37,7 +47,7 @@
             </div>
 
             <!-- Lato d'esordio -->
-            <div class="nice-form-group col-lg-4">
+            <div class="nice-form-group col-lg-4 third_level neurologi">
                 <label for="side_of_onset">{{ _('Lato d\'esordio') }}</label>
                 <select id="side_of_onset" name="side_of_onset">
                     <option value="">{{ _('Non disponibile') }}</option>
@@ -48,7 +58,7 @@
             </div>
 
             <!-- El escorial class -->
-            <div class="nice-form-group col-lg-4">
+            <div class="nice-form-group col-lg-4 third_level">
                 <label for="elescorial_class">{{ _('El escorial class') }}</label>
                 <select id="elescorial_class" name="elescorial_class">
                     <option value="">{{ _('Non disponibile') }}</option>
@@ -59,105 +69,105 @@
             </div>
 
             <!-- Età -->
-            <div class="nice-form-group col-lg-4">
+            <div class="nice-form-group col-lg-4 third_level neurologi medici_base">
                 <label>{{ _('Età (in anni)') }}</label>
                 <input type="number" id="age_onset" name="age_onset" min="0" placeholder="{{ _('Età') }}">
             </div>
 
             <!-- Delay -->
-            <div class="nice-form-group col-lg-4">
+            <div class="nice-form-group col-lg-4 third_level neurologi">
                 <label>{{ _('Delay (in mesi)') }}</label>
                 <input type="number" id="delay" name="delay" min="0" placeholder="{{ _('Delay') }}">
             </div>
 
             <!-- HBW -->
-            <div class="nice-form-group col-lg-4">
+            <div class="nice-form-group col-lg-4 third_level neurologi medici_base">
                 <label>{{ _('HBW (in kg)') }}</label>
                 <input type="number" id="hbw" name="hbw" min="0" placeholder="{{ _('HBW') }}">
             </div>
 
             <!-- Peso attuale -->
-            <div class="nice-form-group col-lg-4">
+            <div class="nice-form-group col-lg-4 third_level neurologi medici_base">
                 <label>{{ _('Peso attuale (in kg)') }}</label>
                 <input type="number" id="weight_diagnosis" name="weight_diagnosis" min="0"
                        placeholder="{{ _('Peso attuale') }}">
             </div>
 
             <!-- Δ Peso -->
-            <div class="nice-form-group col-lg-4">
+            <div class="nice-form-group col-lg-4 third_level neurologi medici_base">
                 <label>{{ _('Δ Peso (in kg)') }}</label>
                 <input type="number" id="delta_weight" name="delta_weight" min="0" placeholder="{{ _('Δ Peso') }}">
             </div>
 
             <!-- ALSFRS prima visita -->
-            <div class="nice-form-group col-lg-4">
+            <div class="nice-form-group col-lg-4 third_level">
                 <label>{{ _('ALSFRS prima visita') }}</label>
                 <input type="number" id="alsfrs_evalutation_1_visit" name="alsfrs_evalutation_1_visit" min="0"
                        placeholder="{{ _('ALSFRS prima visita') }}">
             </div>
 
             <!-- Δ-ALSFRS -->
-            <div class="nice-form-group col-lg-4">
+            <div class="nice-form-group col-lg-4 third_level">
                 <label>{{ _('Δ-ALSFRS') }}</label>
                 <input type="number" id="delta_alsfrs" name="delta_alsfrs" min="0" step="0.01"
                        placeholder="{{ _('Δ-ALSFRS') }}">
             </div>
 
             <!-- ALSFRS Bulbare -->
-            <div class="nice-form-group col-lg-4">
+            <div class="nice-form-group col-lg-4 third_level">
                 <label>{{ _('ALSFRS Bulbare') }}</label>
                 <input type="number" id="alsfrs_bulb" name="alsfrs_bulb" min="0"
                        placeholder="{{ _('ALSFRS Bulbare') }}">
             </div>
 
             <!-- ALSFRS Arti superiori -->
-            <div class="nice-form-group col-lg-4">
+            <div class="nice-form-group col-lg-4 third_level">
                 <label>{{ _('ALSFRS Arti superiori') }}</label>
                 <input type="number" id="alsfrs_aass" name="alsfrs_aass" min="0"
                        placeholder="{{ _('ALSFRS Arti superiori') }}">
             </div>
 
             <!-- ALSFRS Arti inferiori -->
-            <div class="nice-form-group col-lg-4">
+            <div class="nice-form-group col-lg-4 third_level">
                 <label>{{ _('ALSFRS Arti inferiori') }}</label>
                 <input type="number" id="alsfrs_aaii" name="alsfrs_aaii" min="0"
                        placeholder="{{ _('ALSFRS Arti inferiori') }}">
             </div>
 
             <!-- ALSFRS respiratorio -->
-            <div class="nice-form-group col-lg-4">
+            <div class="nice-form-group col-lg-4 third_level">
                 <label>{{ _('ALSFRS respiratorio') }}</label>
                 <input type="number" id="alsfrs_resp" name="alsfrs_resp" min="0"
                        placeholder="{{ _('ALSFRS respiratorio') }}">
             </div>
 
             <!-- FVC -->
-            <div class="nice-form-group col-lg-4">
+            <div class="nice-form-group col-lg-4 third_level">
                 <label>{{ _('FVC %%') }}</label>
                 <input type="number" id="fvc" name="fvc" min="0" placeholder="{{ _('FVC %%') }}">
             </div>
 
             <!-- CK -->
-            <div class="nice-form-group col-lg-4">
+            <div class="nice-form-group col-lg-4 third_level neurologi medici_base">
                 <label>{{ _('CK') }}</label>
                 <input type="number" id="ck" name="ck" min="0" placeholder="{{ _('CK') }}">
             </div>
 
             <!-- Torino totale -->
-            <div class="nice-form-group col-lg-4">
+            <div class="nice-form-group col-lg-4 third_level neurologi">
                 <label>{{ _('Torino totale') }}</label>
                 <input type="number" id="turin_tot" name="turin_tot" min="0" placeholder="{{ _('Torino totale') }}">
             </div>
 
             <!-- Torino lower MN -->
-            <div class="nice-form-group col-lg-4">
+            <div class="nice-form-group col-lg-4 third_level neurologi">
                 <label>{{ _('Torino lower MN') }}</label>
                 <input type="number" id="turin_lower_mn" name="turin_lower_mn" min="0"
                        placeholder="{{ _('Torino lower MN') }}">
             </div>
 
             <!-- Sesso -->
-            <div class="nice-form-group col-lg-4">
+            <div class="nice-form-group col-lg-4 third_level neurologi medici_base">
                 <label>{{ _('Sesso') }}</label>
                 <div class="nice-form-group">
                     <input type="radio" name="sex" id="sex-0" value="0">
@@ -170,7 +180,7 @@
             </div>
 
             <!-- Numero di siti -->
-            <div class="nice-form-group col-lg-4">
+            <div class="nice-form-group col-lg-4 third_level neurologi">
                 <label>{{ _('Numero di siti') }}</label>
                 {% for i in range(5) %}
                 <div class="nice-form-group">
@@ -181,7 +191,7 @@
             </div>
 
             <!-- Familiarità -->
-            <div class="nice-form-group col-lg-4">
+            <div class="nice-form-group col-lg-4 third_level neurologi medici_base">
                 <label>{{ _('Familiarità MND/Demenza/Psic./Paget') }}</label>
                 <div class="nice-form-group">
                     <input type="radio" name="familiarity" id="familiarity-nd" value="" checked>
@@ -198,7 +208,7 @@
             </div>
 
             <!-- Second Opinion -->
-            <div class="nice-form-group col-lg-4">
+            <div class="nice-form-group col-lg-4 third_level">
                 <label>{{ _('Second Opinion') }}</label>
                 <div class="nice-form-group">
                     <input type="radio" name="second_opinion" id="second_opinion-nd" value="" checked>
@@ -215,7 +225,7 @@
             </div>
 
             <!-- EM Lability -->
-            <div class="nice-form-group col-lg-4">
+            <div class="nice-form-group col-lg-4 third_level neurologi">
                 <label>{{ _('EM Lability') }}</label>
                 <div class="nice-form-group">
                     <input type="radio" name="em_lability" id="em_lability-nd" value="" checked>
@@ -232,7 +242,7 @@
             </div>
 
             <!-- Crampi -->
-            <div class="nice-form-group col-lg-4">
+            <div class="nice-form-group col-lg-4 third_level neurologi medici_base">
                 <label>{{ _('Crampi') }}</label>
                 <div class="nice-form-group">
                     <input type="radio" name="cramps" id="cramps-nd" value="" checked>
@@ -249,7 +259,7 @@
             </div>
 
             <!-- Fascicolazioni -->
-            <div class="nice-form-group col-lg-4">
+            <div class="nice-form-group col-lg-4 third_level neurologi medici_base">
                 <label>{{ _('Fascicolazioni') }}</label>
                 <div class="nice-form-group">
                     <input type="radio" name="fasciculation" id="fasciculation-nd" value="" checked>
@@ -266,7 +276,7 @@
             </div>
 
             <!-- Progressione -->
-            <div class="nice-form-group col-lg-4">
+            <div class="nice-form-group col-lg-4 third_level neurologi medici_base">
                 <label>{{ _('Progressione') }}</label>
                 <div class="nice-form-group">
                     <input type="radio" name="progression" id="progression-nd" value="" checked>
@@ -283,7 +293,7 @@
             </div>
 
             <!-- EMG -->
-            <div class="nice-form-group col-lg-4">
+            <div class="nice-form-group col-lg-4 third_level neurologi">
                 <label>{{ _('EMG') }}</label>
                 <div class="nice-form-group">
                     <input type="radio" name="emg" id="emg-nd" value="" checked>
@@ -300,7 +310,7 @@
             </div>
 
             <!-- ENG -->
-            <div class="nice-form-group col-lg-4">
+            <div class="nice-form-group col-lg-4 third_level neurologi">
                 <label>{{ _('ENG') }}</label>
                 <div class="nice-form-group">
                     <input type="radio" name="eng" id="eng-nd" value="" checked>
@@ -317,7 +327,7 @@
             </div>
 
             <!-- IgM Borrelia -->
-            <div class="nice-form-group col-lg-4">
+            <div class="nice-form-group col-lg-4 third_level">
                 <label>{{ _('IgM Borrelia') }}</label>
                 <div class="nice-form-group">
                     <input type="radio" name="igm_borellina" id="igm_borellina-nd" value="" checked>
@@ -334,7 +344,7 @@
             </div>
 
             <!-- IgG Borrelia -->
-            <div class="nice-form-group col-lg-4">
+            <div class="nice-form-group col-lg-4 third_level">
                 <label>{{ _('IgG Borrelia') }}</label>
                 <div class="nice-form-group">
                     <input type="radio" name="igg_borellina" id="igg_borellina-nd" value="" checked>
@@ -351,7 +361,7 @@
             </div>
 
             <!-- WB Borrelia -->
-            <div class="nice-form-group col-lg-4">
+            <div class="nice-form-group col-lg-4 third_level">
                 <label>{{ _('WB Borrelia') }}</label>
                 <div class="nice-form-group">
                     <input type="radio" name="wb_borellina" id="wb_borellina-nd" value="" checked>
