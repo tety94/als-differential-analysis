@@ -4,3 +4,4 @@ methods.docx
 catboost_info/*
 config.py
 /website/translations/*/LC_MESSAGES/*.mo
+/models
