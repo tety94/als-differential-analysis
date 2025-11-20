@@ -78,7 +78,7 @@ for k in features.keys():
 
     # 5. Modelli
     models = get_models()
-    res_df, model_feature_importances, trained_pipelines = train_models(log, X, y, numeric_cols, categorical_cols, models, test_folder)
+    res_df, model_feature_importances, trained_pipelines = train_models(log, k, X, y, numeric_cols, categorical_cols, models, test_folder)
 
     comparison_df = compare_models_to_baseline(res_df, baseline,trained_pipelines, output_folder=f"{test_folder}", model_output_folder=model_output_folder)
 

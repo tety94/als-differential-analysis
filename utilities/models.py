@@ -1,19 +1,36 @@
-from sklearn.linear_model import LogisticRegression
-from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier, HistGradientBoostingClassifier, ExtraTreesClassifier
+from sklearn.ensemble import HistGradientBoostingClassifier
 from xgboost import XGBClassifier
 from lightgbm import LGBMClassifier
 from catboost import CatBoostClassifier
 from config import random_state
 
+
 def get_models():
     models = {
-        'LogisticRegression': LogisticRegression(max_iter=1000, random_state=random_state, class_weight='balanced'),
-        'RandomForest': RandomForestClassifier(n_estimators=200, random_state=random_state, class_weight='balanced', n_jobs=-1),
-        'GradientBoosting': GradientBoostingClassifier(n_estimators=200, random_state=random_state),
-        'HistGradientBoosting': HistGradientBoostingClassifier(max_iter=200, random_state=random_state),
-        'XGBoost': XGBClassifier(eval_metric="logloss", random_state=random_state, n_jobs=-1),
-        'LightGBM': LGBMClassifier(class_weight="balanced", random_state=random_state, n_jobs=-1, verbose=-1),
-        'CatBoost': CatBoostClassifier(verbose=0, random_state=random_state, class_weights=[1,2]),
-        'ExtraTrees': ExtraTreesClassifier(n_estimators=300, random_state=random_state, class_weight="balanced", n_jobs=-1)
+        'CatBoost': CatBoostClassifier(
+            verbose=0,
+            random_state=random_state,
+            class_weights=[1, 2]
+        ),
+
+        'HistGradientBoosting': HistGradientBoostingClassifier(
+            max_iter=200,
+            random_state=random_state
+        ),
+
+        'XGBoost': XGBClassifier(
+            eval_metric="logloss",
+            random_state=random_state,
+            n_jobs=-1,
+            tree_method="hist"     # più veloce, gestisce bene i missing
+        ),
+
+        'LightGBM': LGBMClassifier(
+            class_weight="balanced",
+            random_state=random_state,
+            n_jobs=-1,
+            verbose=-1
+        ),
     }
+
     return models

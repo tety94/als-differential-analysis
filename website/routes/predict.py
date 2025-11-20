@@ -12,6 +12,7 @@ from website.utilities import clean_for_model, clean_for_db
 from website.models import Model
 from website.db_connection import engine
 from sqlalchemy.orm import sessionmaker
+from utilities.models import get_models
 
 predict_bp = Blueprint('predict', __name__)
 
@@ -115,8 +116,7 @@ def predict():
     results = {}
     model_outputs = {}
 
-    models_to_use = ["LogisticRegression", "RandomForest", "GradientBoosting", "HistGradientBoosting",
-                     "XGBoost", "LightGBM", "CatBoost", "ExtraTrees"]
+    models_to_use = list(get_models().keys())
 
     model_type = form_data.get('model_type')
     for model_name in models_to_use:
