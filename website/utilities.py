@@ -1,13 +1,19 @@
 import numpy as np
 
-def clean_for_model(value, cast_type=float):
-    """Valori mancanti diventano np.nan per il modello"""
+def clean_for_model(value, column_name=None, categorical_cols=None):
+    """
+    Trasforma valori mancanti in np.nan per il modello.
+    Se la colonna è categoriale, lascia il valore così com'è.
+    """
     try:
         if value is None or value == '':
             return np.nan
-        return cast_type(value)
+        if categorical_cols and column_name in categorical_cols:
+            return value  # lascia invariato per categorie
+        return float(value)  # cast a float per le altre colonne
     except (ValueError, TypeError):
         return np.nan
+
 
 
 def clean_for_db(value, cast_type=float):

@@ -170,7 +170,7 @@
             <div class="nice-form-group col-lg-4 third_level neurologi medici_base">
                 <label>{{ _('Sesso') }}</label>
                 <div class="nice-form-group">
-                    <input type="radio" name="sex" id="sex-0" value="0">
+                    <input type="radio" name="sex" id="sex-0" value="0" checked>
                     <label for="sex-0">{{ _('Maschio') }}</label>
                 </div>
                 <div class="nice-form-group">
@@ -184,7 +184,7 @@
                 <label>{{ _('Numero di siti') }}</label>
                 {% for i in range(5) %}
                 <div class="nice-form-group">
-                    <input type="radio" name="n_site" id="n_site-{{ i }}" value="{{ i }}">
+                    <input type="radio" name="n_site" id="n_site-{{ i }}" value="{{ i }}" checked>
                     <label for="n_site-{{ i }}">{{ i }}</label>
                 </div>
                 {% endfor %}
@@ -376,6 +376,109 @@
                     <label for="wb_borellina-1">{{ _('Sì') }}</label>
                 </div>
             </div>
+
+            <!-- Brain MRI MND -->
+            <div class="nice-form-group col-lg-4 third_level">
+                <label>{{ _('Brain MRI MND') }}</label>
+                <div class="nice-form-group">
+                    <input type="radio" name="brain_mri_mnd" id="brain_mri_mnd-nd" value="" checked>
+                    <label for="brain_mri_mnd-nd">{{ _('Non Disponibile') }}</label>
+                </div>
+                <div class="nice-form-group">
+                    <input type="radio" name="brain_mri_mnd" id="brain_mri_mnd-0" value="0">
+                    <label for="brain_mri_mnd-0">{{ _('No') }}</label>
+                </div>
+                <div class="nice-form-group">
+                    <input type="radio" name="brain_mri_mnd" id="brain_mri_mnd-1" value="1">
+                    <label for="brain_mri_mnd-1">{{ _('Sì') }}</label>
+                </div>
+            </div>
+
+            <!-- Brain MRI Other -->
+            <div class="nice-form-group col-lg-4 third_level">
+                <label>{{ _('Brain MRI Other') }}</label>
+                <div class="nice-form-group">
+                    <input type="radio" name="brain_mri_other" id="brain_mri_other-nd" value="" checked>
+                    <label for="brain_mri_other-nd">{{ _('Non Disponibile') }}</label>
+                </div>
+                <div class="nice-form-group">
+                    <input type="radio" name="brain_mri_other" id="brain_mri_other-0" value="0">
+                    <label for="brain_mri_other-0">{{ _('No') }}</label>
+                </div>
+                <div class="nice-form-group">
+                    <input type="radio" name="brain_mri_other" id="brain_mri_other-1" value="1">
+                    <label for="brain_mri_other-1">{{ _('Sì') }}</label>
+                </div>
+            </div>
+
+            <!-- Spine MRI -->
+            <div class="nice-form-group col-lg-4 third_level">
+                <label>{{ _('Spine MRI') }}</label>
+                <div class="nice-form-group">
+                    <input type="radio" name="spine_mri" id="spine_mri-nd" value="" checked>
+                    <label for="spine_mri-nd">{{ _('Non Disponibile') }}</label>
+                </div>
+                <div class="nice-form-group">
+                    <input type="radio" name="spine_mri" id="spine_mri-0" value="0">
+                    <label for="spine_mri-0">{{ _('No') }}</label>
+                </div>
+                <div class="nice-form-group">
+                    <input type="radio" name="spine_mri" id="spine_mri-1" value="1">
+                    <label for="spine_mri-1">{{ _('Sì') }}</label>
+                </div>
+            </div>
+
+            <!-- PET -->
+            <div class="nice-form-group col-lg-4 third_level">
+                <label>{{ _('PET') }}</label>
+                <div class="nice-form-group">
+                    <input type="radio" name="pet" id="pet-nd" value="" checked>
+                    <label for="pet-nd">{{ _('Non Disponibile') }}</label>
+                </div>
+                <div class="nice-form-group">
+                    <input type="radio" name="pet" id="pet-0" value="0">
+                    <label for="pet-0">{{ _('No') }}</label>
+                </div>
+                <div class="nice-form-group">
+                    <input type="radio" name="pet" id="pet-1" value="1">
+                    <label for="pet-1">{{ _('Sì') }}</label>
+                </div>
+            </div>
+
+            <!-- Test Neuro -->
+            <div class="nice-form-group col-lg-4 third_level">
+                <label>{{ _('Test Neuro') }}</label>
+                <div class="nice-form-group">
+                    <input type="radio" name="test_neuro" id="test_neuro-nd" value="" checked>
+                    <label for="test_neuro-nd">{{ _('Non Disponibile') }}</label>
+                </div>
+                <div class="nice-form-group">
+                    <input type="radio" name="test_neuro" id="test_neuro-0" value="0">
+                    <label for="test_neuro-0">{{ _('No') }}</label>
+                </div>
+                <div class="nice-form-group">
+                    <input type="radio" name="test_neuro" id="test_neuro-1" value="1">
+                    <label for="test_neuro-1">{{ _('Sì') }}</label>
+                </div>
+            </div>
+
+            <!-- Tongue Atrophy -->
+            <div class="nice-form-group col-lg-4 third_level">
+                <label>{{ _('Tongue Atrophy') }}</label>
+                <div class="nice-form-group">
+                    <input type="radio" name="tongue_atrophy" id="tongue_atrophy-nd" value="" checked>
+                    <label for="tongue_atrophy-nd">{{ _('Non Disponibile') }}</label>
+                </div>
+                <div class="nice-form-group">
+                    <input type="radio" name="tongue_atrophy" id="tongue_atrophy-0" value="0">
+                    <label for="tongue_atrophy-0">{{ _('No') }}</label>
+                </div>
+                <div class="nice-form-group">
+                    <input type="radio" name="tongue_atrophy" id="tongue_atrophy-1" value="1">
+                    <label for="tongue_atrophy-1">{{ _('Sì') }}</label>
+                </div>
+            </div>
+
 
         </div>
 

@@ -15,6 +15,8 @@ from sklearn.calibration import calibration_curve, CalibratedClassifierCV
 from website.models import Model
 from website.db_connection import engine
 from sqlalchemy.orm import sessionmaker
+from catboost import CatBoostClassifier
+from utilities.CatBoostWrapper import CatBoostWrapper
 
 
 # ======================================================
@@ -101,41 +103,38 @@ def create_new_version(numeric_cols, categorical_cols, model_name, model, model_
 # ======================================================
 # TRAINING
 # ======================================================
-
-def train_models(log, model_type, X, y, numeric_cols, categorical_cols, models, folder):
-
+def train_models(log, model_type, X, y, numeric_cols, categorical_cols, models, folder, n_splits=5):
     results = {}
     model_feature_importances = {}
     trained_pipelines = {}
 
-    # ---------------------------
-    # PREPROCESSING (no imputation)
-    # ---------------------------
-    num_pipeline = Pipeline([
-        ('scaler', StandardScaler())
-    ])
-
-    # OrdinalEncoder mantiene i NaN nativi
-    cat_pipeline = Pipeline([
-        ('encoder', OrdinalEncoder(handle_unknown='use_encoded_value', unknown_value=-1))
-    ])
-
-    preprocessor = ColumnTransformer([
-        ('num', num_pipeline, numeric_cols),
-        ('cat', cat_pipeline, categorical_cols)
-    ])
-
     skf = StratifiedKFold(n_splits=n_splits, shuffle=True, random_state=42)
 
     for name, model in models.items():
-
         log(f"\n--- Modello: {name} ---")
-        pipe = Pipeline([('pre', preprocessor), ('clf', model)])
+        print(f"\n--- Modello: {name} ---")
+
+        # copia il dataframe per questo modello
+        X_model = X.copy()
+
+        if name == 'CatBoost':
+            # CatBoost: non convertire in category globale, passiamo indici
+            cat_features_idx = [X_model.columns.get_loc(c) for c in categorical_cols]
+            model = CatBoostClassifier(iterations=500, learning_rate=0.1, depth=6, verbose=0)
+            pipe = Pipeline([('clf', model)])  # pipeline minimale solo per uniformità
+        else:
+            # Altri modelli: converti le categoriche in numeri
+            if categorical_cols:
+                X_model[categorical_cols] = X_model[categorical_cols].astype(str)  # garantiamo oggetti
+                encoder = OrdinalEncoder(handle_unknown='use_encoded_value', unknown_value=-1)
+                X_model[categorical_cols] = encoder.fit_transform(X_model[categorical_cols])
+            pipe = Pipeline([('clf', model)])
+
         start_time = time.time()
 
         # Cross-validation
-        scores = cross_validate(pipe, X, y, cv=skf, scoring=['accuracy', 'f1'], n_jobs=-1)
-        y_pred = cross_val_predict(pipe, X, y, cv=skf, n_jobs=-1)
+        scores = cross_validate(pipe, X_model, y, cv=skf, scoring=['accuracy', 'f1'], n_jobs=-1)
+        y_pred = cross_val_predict(pipe, X_model, y, cv=skf, n_jobs=-1)
 
         elapsed_time = time.time() - start_time
         log(f"⏱ Tempo esecuzione {name}: {elapsed_time:.1f} sec")
@@ -150,22 +149,15 @@ def train_models(log, model_type, X, y, numeric_cols, categorical_cols, models, 
         sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', ax=ax)
         plt.title(f'Confusion Matrix - {name}')
         save_plot(fig, os.path.join(folder, f'confusion_matrix_{name}.png'))
+        plt.close(fig)
 
-        tn, fp, fn, tp = cm.ravel()
-        log(f"Sensitivity_0: {tn/(tn+fp):.4f} | Specificity_0: {tn/(tn+fn):.4f}")
-
+        # ROC e AUC
         roc_auc = float('nan')
         if hasattr(model, "predict_proba"):
-            # Predizioni in cross-validation
-            y_proba = cross_val_predict(
-                pipe, X, y, cv=skf, method='predict_proba'
-            )[:, 1]
-
-            # ROC
+            y_proba = cross_val_predict(pipe, X_model, y, cv=skf, method='predict_proba')[:, 1]
             fpr, tpr, _ = roc_curve(y, y_proba)
             roc_auc = auc(fpr, tpr)
 
-            # Plot ROC corretto
             fig, ax = plt.subplots()
             ax.plot(fpr, tpr, label=f'AUC = {roc_auc:.3f}')
             ax.plot([0, 1], [0, 1], '--', color='gray')
@@ -173,41 +165,25 @@ def train_models(log, model_type, X, y, numeric_cols, categorical_cols, models, 
             ax.set_xlabel('False Positive Rate')
             ax.set_ylabel('True Positive Rate')
             ax.legend()
-
-            # Salva SOLO la ROC corretta
             save_plot(fig, os.path.join(folder, f'roc_curve_{name}.png'))
             plt.close(fig)
 
-        # FIT finale + calibrazione
-        pipe.fit(X, y)
-        fitted_pre = pipe.named_steps['pre']
-        base_clf = pipe.named_steps['clf']
-        X_transformed = fitted_pre.transform(X)
+        # FIT finale su tutto il dataset
+        if name == 'CatBoost':
+            pipe.fit(X_model, y, clf__cat_features=cat_features_idx)
+        else:
+            pipe.fit(X_model, y)
 
-        calibrated = CalibratedClassifierCV(base_clf, method="isotonic")
-        calibrated.fit(X_transformed, y)
-
-        final_pipe = Pipeline([
-            ('pre', fitted_pre),
-            ('clf', calibrated)
-        ])
-
-        # FEATURE IMPORTANCE
-        feature_names_all = fitted_pre.get_feature_names_out()
-        fi_sorted = save_feature_importances(pipe, name, feature_names_all, folder, top_n_features)
-        if fi_sorted is not None:
-            model_feature_importances[name] = fi_sorted
-
-
+        # Salva pipeline addestrata
         trained_pipelines[name] = {
-            "pipeline": final_pipe,
-            "feature_columns": X.columns.tolist()
+            "pipeline": pipe,
+            "feature_columns": X_model.columns.tolist()
         }
 
         results[name] = {'accuracy': acc_mean, 'f1': f1_mean, 'auc': roc_auc}
         create_new_version(numeric_cols, categorical_cols, name, model, model_type)
 
-    # SALVA risultati
+    # Salva risultati finali
     res_df = pd.DataFrame.from_dict(results, orient='index')
     res_df.to_csv(os.path.join(folder, 'model_results_summary.csv'))
 

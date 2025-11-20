@@ -13,6 +13,7 @@ from website.models import Model
 from website.db_connection import engine
 from sqlalchemy.orm import sessionmaker
 from utilities.models import get_models
+from config import features, rename_map
 
 predict_bp = Blueprint('predict', __name__)
 
@@ -29,138 +30,37 @@ def predict():
     Session = sessionmaker(bind=engine)
     session = Session()
 
-    numeric_fields = [
-        'age_onset', 'delay', 'hbw', 'weight_diagnosis', 'delta_weight',
-        'alsfrs_evalutation_1_visit', 'delta_alsfrs', 'alsfrs_bulb',
-        'alsfrs_aass', 'alsfrs_aaii', 'alsfrs_resp', 'fvc', 'ck',
-        'turin_tot', 'turin_lower_mn'
-    ]
-    categorical_fields = [
-        'site_of_onset', 'phenotype', 'type_onset', 'side_of_onset',
-        'elescorial_class', 'diagn_1_vis', 'n_site', 'sex',
-        'familiarity', 'second_opinion', 'em_lability', 'cramps',
-        'fasciculation', 'progression', 'emg', 'eng', 'igm_borellina',
-        'igg_borellina', 'wb_borellina', 'brain_mri_mnd', 'brain_mri_other',
-        'spine_mri', 'pet', 'test_neuro', 'genetic_status', 'tongue_atrophy'
+    numeric_fields = features['third_level']['numerical_cols']
+    categorical_fields = features['third_level']['categorical_columns']
 
-    ]
-    bool_fields = [
-    ]
+    if 'weight_diagnosis (kg)' in numeric_fields:
+        numeric_fields.remove('weight_diagnosis (kg)')
 
     # crea due dizionari: uno per DB, uno per modello
     db_data = {}
     model_data = {}
 
-    for field in numeric_fields + categorical_fields:
+    for a in categorical_fields + numeric_fields:
+        field = [key for key, value in rename_map.items() if value == a]
+        if not field:
+            continue
+        field = field[0]
         db_data[field] = clean_for_db(form_data.get(field))
-        model_data[field] = clean_for_model(form_data.get(field))
+        v = form_data.get(field)
+        if a in numeric_fields:
+            v = clean_for_model(v, field, categorical_fields)
+        model_data[field] = v
 
-    for field in bool_fields:
-        val = bool(form_data.get(field))
-        db_data[field] = val
-        model_data[field] = int(val)
-
-    # salva paziente nel DB
-    patient = PatientPrediction(**db_data)
-    session.add(patient)
-    session.commit()
-
-    # predizione
-    rename_map = {
-        'age_onset': 'age_onset (y)',
-        'delay': 'delay (m)',
-        'hbw': 'HBW (kg)',
-        'weight_diagnosis': 'weight_diagnosis',
-        'alsfrs_evalutation_1_visit': 'alsfrs_evalutation_1_visit',
-        'delta_alsfrs': 'Δalsfrs',
-        'alsfrs_bulb': 'alsfrs_bulb',
-        'alsfrs_aass': 'alsfrs_aass',
-        'alsfrs_aaii': 'alsfrs_aaii',
-        'alsfrs_resp': 'alsfrs_resp.',
-        'fvc': 'fvc (%)',
-        'ck': 'ck (valore)',
-        'turin_tot': 'Turin_tot',
-        'turin_lower_mn': 'Turin_lower_MN',
-        'site_of_onset': 'site_of_onset',
-        'phenotype': 'phenotype (1-8)',
-        'type_onset': 'type_onset (0-4)',
-        'side_of_onset': 'side_of_onset',
-        'elescorial_class': 'elescorial_class (0-3)',
-        'diagn_1_vis': 'diagn_1_vis',
-        'sex': 'sex (M/F)',
-        'familiarity': 'familiarity_MND/demenza/psich./Paget (0/1)',
-        'second_opinion': 'second_opinion (0/1)',
-        'em_lability': 'em_lability (0/1)',
-        'cramps': 'cramps (0/1)',
-        'fasciculation': 'fasciculation (0/1)',
-        'progression': 'progression (0/1)',
-        'emg': 'emg (0/1)',
-        'eng': 'eng (0/1)',
-        'igm_borellina': 'IgM Borrelia (0/1)',
-        'igg_borellina': 'IgG Borrelia (0/1)',
-        'wb_borellina': 'WB_Borrelia (0/1)',
-        'brain_mri_mnd': 'brain_mri_mnd (0/1)',
-        'brain_mri_other': 'brain_mri_other (0/1)',
-        'spine_mri': 'spine_mri (0/1)',
-        'pet': 'pet (0/1)',
-        'test_neuro': 'test_neuro (0/1)',
-        'genetic_status': 'genetic_status',
-        'tongue_atrophy': 'tongue_atrophy',
-        'delta_weight' :'Δweight (kg)',
-        'n_site' : 'n_site (0/4)',
-    }
-
+    # dataframe input per modello
     model_data_renamed = {rename_map.get(k, k): v for k, v in model_data.items()}
     input_df = pd.DataFrame([model_data_renamed])
 
-    results = {}
-    model_outputs = {}
+    for col in categorical_fields + numeric_fields:
+        if col not in input_df.columns:
+            input_df[col] = pd.NA
 
-    models_to_use = list(get_models().keys())
-
-    model_type = form_data.get('model_type')
-    for model_name in models_to_use:
-
-        version = (session.query(Model)
-                   .filter(Model.name == model_name)
-                   .order_by(Model.id.desc())
-                   .first()).version
-        model_filename = f"{model_type}/{model_name}_{version}.joblib"
-        model_path = os.path.join(ML_DIR, model_filename)
-
-        # carica modello se non già in memoria
-        if model_name not in pipelines and os.path.exists(model_path):
-            pipelines[model_name] = joblib.load(model_path)
-        if model_name not in pipelines:
-            continue
-
-        pipe = pipelines[model_name]["pipeline"]
-
-        # passiamo direttamente i dati grezzi alla pipeline, senza riallineamento manuale
-        pred_class = int(pipe.predict(input_df)[0])
-        pred_proba = pipe.predict_proba(input_df)[0][pred_class]
-
-        results[model_name] = {"class": pred_class, "probability": pred_proba}
-
-        model_outputs[model_name] = {
-            "pred_class": pred_class,
-            "pred_proba": pred_proba,
-            "timestamp": datetime.utcnow().isoformat(),
-            # "user_id": current_user.id,
-            "feature_names": list(input_df.columns),
-            # "model_version": model.version,
-            # "model_params": model.get_params(),
-        }
-
-        if hasattr(pipe, "named_steps"):
-            transformed = pipe.named_steps["pre"].transform(input_df)
-            model_outputs[model_name]["transformed_input"] = transformed.tolist()
-
-        # Pulisce i dati da NaN e tipi numpy
-        model_outputs[model_name] = clean(model_outputs[model_name])
-
-    # salva risultati nel DB
-    patient.results = results
+    # salva paziente nel DB
+    patient = PatientPrediction(**db_data)
 
     df = input_df.copy()
     for col in df.select_dtypes(bool).columns:
@@ -168,14 +68,94 @@ def predict():
     record_dict = clean(df.to_dict(orient='records')[0])
     patient.model_input = record_dict
 
-    model_outputs["input_summary"] = record_dict
+    session.add(patient)
+    session.commit()
 
+    # predizione
+    results = {}
+    model_outputs = {}
+    models_to_use = list(get_models().keys())
+    model_type = form_data.get('model_type')
+
+    for model_name in models_to_use:
+        print('#########################')
+        print(model_name)
+        print('#########################')
+        version = (
+            session.query(Model)
+            .filter(Model.name == model_name)
+            .order_by(Model.id.desc())
+            .first()
+        ).version
+        model_filename = f"{model_type}/{model_name}_{version}.joblib"
+        model_path = os.path.join(ML_DIR, model_filename)
+
+        if model_name not in pipelines and os.path.exists(model_path):
+            pipelines[model_name] = joblib.load(model_path)
+        if model_name not in pipelines:
+            continue
+
+        pipe = pipelines[model_name]["pipeline"]
+        input_df_model = input_df.copy()
+
+        # riempi le colonne mancanti e riordina
+        feature_order = pipelines[model_name]["feature_columns"]
+        missing_cols = [c for c in feature_order if c not in input_df_model.columns]
+        for c in missing_cols:
+            if c in numeric_fields:
+                input_df_model[c] = np.nan
+            else:
+                if model_name == "CatBoost":
+                    input_df_model[c] = "missing"
+                else:
+                    input_df_model[c] = -1
+        input_df_model = input_df_model[feature_order]
+
+        # gestione specifica modello
+        if model_name == "CatBoost":
+            for col in categorical_fields:
+                input_df_model[col] = input_df_model[col].fillna("missing").astype(str)
+                input_df_model[col] = input_df_model[col].apply(lambda x: str(x) if x not in [None, ""] else "missing")
+            input_df_model[numeric_fields] = input_df_model[numeric_fields].astype(float)
+        elif model_name == "LightGBM":
+            input_df_model[numeric_fields] = input_df_model[numeric_fields].astype(float)
+            for col in categorical_fields:
+                # sostituisci NaN o stringhe vuote con -1, poi cast a int
+                input_df_model[col] = input_df_model[col].replace([None, "", "missing"], -1).astype(int)
+        else:
+            input_df_model[numeric_fields] = input_df_model[numeric_fields].astype(float)
+            for col in categorical_fields:
+                input_df_model[col] = input_df_model[col].replace([None, "", "missing"], -1).astype(int)
+
+        # predizione
+        pred_class = int(pipe.predict(input_df_model)[0])
+        pred_proba = float(pipe.predict_proba(input_df_model)[0][pred_class])  # cast a float standard
+        results[model_name] = {"class": pred_class, "probability": pred_proba}
+
+    patient.results = results
+    model_outputs["input_summary"] = record_dict
     patient.model_log = model_outputs
     patient.created_at = datetime.utcnow()
     session.commit()
     session.close()
 
     return jsonify({"success": True, "results": results})
+
+
+def clean(obj):
+    """Converte numpy, NaN e altri tipi non JS-friendly in oggetti Python standard."""
+    if isinstance(obj, dict):
+        return {k: clean(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [clean(v) for v in obj]
+    elif isinstance(obj, float) and np.isnan(obj):
+        return None
+    elif isinstance(obj, np.generic):
+        return obj.item()
+    else:
+        return obj
+
+
 
 def clean(obj):
     """Converte numpy, NaN e altri tipi non JS-friendly in oggetti Python standard."""
