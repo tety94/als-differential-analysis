@@ -13,6 +13,9 @@ from sklearn.metrics import confusion_matrix, classification_report, roc_curve, 
 from utilities.utils import save_plot
 from config import n_splits, top_n_features
 from sklearn.calibration import calibration_curve, CalibratedClassifierCV
+from website.models import Model
+from website.db_connection import engine
+from sqlalchemy.orm import sessionmaker
 
 
 def get_feature_importances(model, feature_names):
@@ -73,8 +76,38 @@ def save_feature_importances(pipe, model_name, feature_names, folder, top_n=10):
 
     return fi_sorted
 
+def create_new_version(numeric_cols, categorical_cols, model_name, model):
+    Session = sessionmaker(bind=engine)
+    session = Session()
+
+    try:
+        last_model = session.query(Model).filter(Model.name == model_name).order_by(Model.id.desc()).first()
+        if last_model:
+            # Se esiste almeno un modello, incrementa di 1
+            last_version_num = int(last_model.version.strip('v'))
+            new_version = f"v{last_version_num + 1}"
+        else:
+            new_version = "v1"
+
+        params = model.get_params()
+        from website.routes.predict import clean
+        params = clean(params)
+
+        # Crea la nuova riga del modello
+        new_model = Model(
+            name=model_name,
+            version=new_version,
+            params={"numeric_cols": numeric_cols, "categorical_cols": categorical_cols, "models_dict": params},
+            type="classification"
+        )
+
+        session.add(new_model)
+        session.commit()
+    finally:
+        session.close()
 
 def train_models(log, X, y, numeric_cols, categorical_cols, models, folder):
+
     results = {}
     model_feature_importances = {}
     trained_pipelines = {}  # salviamo pipeline + colonne
@@ -88,6 +121,7 @@ def train_models(log, X, y, numeric_cols, categorical_cols, models, folder):
     skf = StratifiedKFold(n_splits=n_splits, shuffle=True, random_state=42)
 
     for name, model in models.items():
+
         log(f"\n--- Modello: {name} ---")
         pipe = Pipeline([('pre', preprocessor), ('clf', model)])
 
@@ -207,6 +241,7 @@ def train_models(log, X, y, numeric_cols, categorical_cols, models, folder):
         }
 
         results[name] = {'accuracy': acc_mean, 'f1': f1_mean, 'auc': roc_auc}
+        create_new_version(numeric_cols, categorical_cols, name, model)
 
     # ROC comparativa
     plt.plot([0, 1], [0, 1], '--', color='gray')

@@ -2,9 +2,12 @@ import pandas as pd
 import logging
 import joblib
 import os
-from config import version
+from website.models import Model
+from website.db_connection import engine
+from sqlalchemy.orm import sessionmaker
 
-def compare_models_to_baseline(model_results_df, baseline, trained_pipelines, output_folder=None, key_metric='f1', model_output_folder= None):
+def compare_models_to_baseline(model_results_df, baseline, trained_pipelines, output_folder=None, key_metric='f1',
+                               model_output_folder=None):
     """
     Confronta i modelli con la baseline e salva i modelli che la superano.
 
@@ -60,6 +63,15 @@ def compare_models_to_baseline(model_results_df, baseline, trained_pipelines, ou
             if trained_pipelines is not None and model_name in trained_pipelines:
                 if comparison.get(key_metric, False):
                     if model_output_folder:
+                        Session = sessionmaker(bind=engine)
+                        session = Session()
+                        version = (session.query(Model)
+                            .filter(Model.name == model_name)
+                            .order_by(Model.id.desc())
+                            .first()).version
+
+                        session.close()
+
                         os.makedirs(model_output_folder, exist_ok=True)
                         model_path = os.path.join(model_output_folder, f"{model_name}_{version}.joblib")
                         joblib.dump(trained_pipelines[model_name], model_path)
@@ -75,4 +87,3 @@ def compare_models_to_baseline(model_results_df, baseline, trained_pipelines, ou
         logging.info(f"Confronto modelli vs baseline salvato in {path}")
 
     return comparison_df
-

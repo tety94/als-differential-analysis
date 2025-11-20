@@ -8,8 +8,10 @@ import os
 import json
 from datetime import datetime
 import numpy as np
-from config import version
 from website.utilities import clean_for_model, clean_for_db
+from website.models import Model
+from website.db_connection import engine
+from sqlalchemy.orm import sessionmaker
 
 predict_bp = Blueprint('predict', __name__)
 
@@ -23,7 +25,7 @@ pipelines = {}
 def predict():
     form_data = request.get_json()
     print("📦 Dati ricevuti:", form_data)
-
+    Session = sessionmaker(bind=engine)
     session = Session()
 
     numeric_fields = [
@@ -118,6 +120,11 @@ def predict():
 
     model_type = form_data.get('model_type')
     for model_name in models_to_use:
+
+        version = (session.query(Model)
+                   .filter(Model.name == model_name)
+                   .order_by(Model.id.desc())
+                   .first()).version
         model_filename = f"{model_type}/{model_name}_{version}.joblib"
         model_path = os.path.join(ML_DIR, model_filename)
 
