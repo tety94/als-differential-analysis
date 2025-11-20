@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-11-19 15:08+0100\n"
+"POT-Creation-Date: 2025-11-19 16:51+0100\n"
 "PO-Revision-Date: 2025-11-19 15:18+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -18,9 +18,30 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.17.0\n"
 
-#: templates/bibliography.html:3 templates/header.html:16
+#: templates/bibliography.html:4 templates/header.html:16
 msgid "Bibliografia"
 msgstr "Bibliography"
+
+#: templates/contacts.html:3
+msgid "Connettiti con noi"
+msgstr "Connect with us"
+
+#: templates/contacts.html:11
+msgid "Visitaci"
+msgstr "Visit us"
+
+#: templates/contacts.html:19
+#, fuzzy
+msgid "Email"
+msgstr "EM Lability"
+
+#: templates/contacts.html:27
+msgid "Telefono"
+msgstr "Phone"
+
+#: templates/contacts.html:28
+msgid "Lun-Ven, 9-12"
+msgstr "Mon-Fry, 9am-12am EST"
 
 #: templates/footer.html:7
 msgid "Tutti i servizi riservati"
@@ -55,189 +76,214 @@ msgid ""
 "Servizio di machine learning per il supporto all'analisi differenziale "
 "per i probabili pazienti SLA"
 msgstr ""
-"Machine learning service to support differential analysis for probable ALS patients"
+"Machine learning service to support differential analysis for probable "
+"ALS patients"
 
 #: templates/tool.html:8
+msgid "Tipo di Modello"
+msgstr "Model type"
+
+#: templates/tool.html:10
+msgid "Third Level"
+msgstr ""
+
+#: templates/tool.html:11
+msgid "Neurologi"
+msgstr ""
+
+#: templates/tool.html:12
+msgid "Medici Base"
+msgstr ""
+
+#: templates/tool.html:18
 msgid "Sito d'esordio"
 msgstr "Onset Site"
 
-#: templates/tool.html:10 templates/tool.html:21 templates/tool.html:32
-#: templates/tool.html:43 templates/tool.html:54
+#: templates/tool.html:20 templates/tool.html:31 templates/tool.html:42
+#: templates/tool.html:53 templates/tool.html:64
 msgid "Non disponibile"
 msgstr "Not available"
 
-#: templates/tool.html:19
+#: templates/tool.html:29
 msgid "Fenotipo d'esordio"
 msgstr "Onset Phenotype"
 
-#: templates/tool.html:30
+#: templates/tool.html:40
 msgid "Tipo d'esordio"
 msgstr "Onset Type"
 
-#: templates/tool.html:41
+#: templates/tool.html:51
 msgid "Lato d'esordio"
 msgstr "Onset Side"
 
-#: templates/tool.html:52
+#: templates/tool.html:62
 msgid "El escorial class"
 msgstr "El Escorial Class"
 
-#: templates/tool.html:63
+#: templates/tool.html:73
 msgid "Età (in anni)"
 msgstr "Age (years)"
 
-#: templates/tool.html:64
+#: templates/tool.html:74
 msgid "Età"
 msgstr "Age"
 
-#: templates/tool.html:69
+#: templates/tool.html:79
 msgid "Delay (in mesi)"
 msgstr "Delay (months)"
 
-#: templates/tool.html:70
+#: templates/tool.html:80
 #, fuzzy
 msgid "Delay"
 msgstr "Delay"
 
-#: templates/tool.html:75
+#: templates/tool.html:85
 msgid "HBW (in kg)"
 msgstr "HBW (kg)"
 
-#: templates/tool.html:76
+#: templates/tool.html:86
 msgid "HBW"
 msgstr "HBW"
 
-#: templates/tool.html:81
+#: templates/tool.html:91
 msgid "Peso attuale (in kg)"
 msgstr "Current Weight (kg)"
 
-#: templates/tool.html:83
+#: templates/tool.html:93
 msgid "Peso attuale"
 msgstr "Current Weight"
 
-#: templates/tool.html:88
+#: templates/tool.html:98
 msgid "Δ Peso (in kg)"
 msgstr "Δ Weight (kg)"
 
-#: templates/tool.html:89
+#: templates/tool.html:99
 msgid "Δ Peso"
 msgstr "Δ Weight"
 
-#: templates/tool.html:94 templates/tool.html:96
+#: templates/tool.html:104 templates/tool.html:106
 msgid "ALSFRS prima visita"
 msgstr "ALSFRS First Visit"
 
-#: templates/tool.html:101 templates/tool.html:103
+#: templates/tool.html:111 templates/tool.html:113
 msgid "Δ-ALSFRS"
 msgstr "Δ ALSFRS"
 
-#: templates/tool.html:108 templates/tool.html:110
+#: templates/tool.html:118 templates/tool.html:120
 msgid "ALSFRS Bulbare"
 msgstr "ALSFRS Bulbar"
 
-#: templates/tool.html:115 templates/tool.html:117
+#: templates/tool.html:125 templates/tool.html:127
 msgid "ALSFRS Arti superiori"
 msgstr "ALSFRS Upper Limbs"
 
-#: templates/tool.html:122 templates/tool.html:124
+#: templates/tool.html:132 templates/tool.html:134
 msgid "ALSFRS Arti inferiori"
 msgstr "ALSFRS Lower Limbs"
 
-#: templates/tool.html:129 templates/tool.html:131
+#: templates/tool.html:139 templates/tool.html:141
 msgid "ALSFRS respiratorio"
 msgstr "ALSFRS Respiratory"
 
-#: templates/tool.html:136 templates/tool.html:137
+#: templates/tool.html:146 templates/tool.html:147
 #, python-format
 msgid "FVC %%"
 msgstr "FVC %%"
 
-#: templates/tool.html:142 templates/tool.html:143
+#: templates/tool.html:152 templates/tool.html:153
 msgid "CK"
 msgstr "CK"
 
-#: templates/tool.html:148 templates/tool.html:149
+#: templates/tool.html:158 templates/tool.html:159
 msgid "Torino totale"
 msgstr "Total Torino"
 
-#: templates/tool.html:154 templates/tool.html:156
+#: templates/tool.html:164 templates/tool.html:166
 msgid "Torino lower MN"
 msgstr "Torino Lower MN"
 
-#: templates/tool.html:161
+#: templates/tool.html:171
 msgid "Sesso"
 msgstr "Sex"
 
-#: templates/tool.html:164
+#: templates/tool.html:174
 msgid "Maschio"
 msgstr "Male"
 
-#: templates/tool.html:168
+#: templates/tool.html:178
 msgid "Femmina"
 msgstr "Female"
 
-#: templates/tool.html:174
+#: templates/tool.html:184
 msgid "Numero di siti"
 msgstr "Number of Sites"
 
-#: templates/tool.html:185
+#: templates/tool.html:195
 msgid "Familiarità MND/Demenza/Psic./Paget"
 msgstr "Family History MND/Dementia/Psych./Paget"
 
-#: templates/tool.html:192 templates/tool.html:209 templates/tool.html:226
-#: templates/tool.html:243 templates/tool.html:260 templates/tool.html:277
-#: templates/tool.html:294 templates/tool.html:311 templates/tool.html:328
-#: templates/tool.html:345 templates/tool.html:362
+#: templates/tool.html:198 templates/tool.html:215 templates/tool.html:232
+#: templates/tool.html:249 templates/tool.html:266 templates/tool.html:283
+#: templates/tool.html:300 templates/tool.html:317 templates/tool.html:334
+#: templates/tool.html:351 templates/tool.html:368
+msgid "Non Disponibile"
+msgstr "Not available"
+
+#: templates/tool.html:202 templates/tool.html:219 templates/tool.html:236
+#: templates/tool.html:253 templates/tool.html:270 templates/tool.html:287
+#: templates/tool.html:304 templates/tool.html:321 templates/tool.html:338
+#: templates/tool.html:355 templates/tool.html:372
 msgid "No"
 msgstr "No"
 
-#: templates/tool.html:196 templates/tool.html:213 templates/tool.html:230
-#: templates/tool.html:247 templates/tool.html:264 templates/tool.html:281
-#: templates/tool.html:298 templates/tool.html:315 templates/tool.html:332
-#: templates/tool.html:349 templates/tool.html:366
+#: templates/tool.html:206 templates/tool.html:223 templates/tool.html:240
+#: templates/tool.html:257 templates/tool.html:274 templates/tool.html:291
+#: templates/tool.html:308 templates/tool.html:325 templates/tool.html:342
+#: templates/tool.html:359 templates/tool.html:376
 msgid "Sì"
 msgstr "Yes"
 
-#: templates/tool.html:202
+#: templates/tool.html:212
 msgid "Second Opinion"
 msgstr "Second Opinion"
 
-#: templates/tool.html:219
+#: templates/tool.html:229
 msgid "EM Lability"
 msgstr "EM Lability"
 
-#: templates/tool.html:236
+#: templates/tool.html:246
 msgid "Crampi"
 msgstr "Cramps"
 
-#: templates/tool.html:253
+#: templates/tool.html:263
 msgid "Fascicolazioni"
 msgstr "Fasciculations"
 
-#: templates/tool.html:270
+#: templates/tool.html:280
 msgid "Progressione"
 msgstr "Progression"
 
-#: templates/tool.html:287
+#: templates/tool.html:297
 msgid "EMG"
 msgstr "EMG"
 
-#: templates/tool.html:304
+#: templates/tool.html:314
 msgid "ENG"
 msgstr "ENG"
 
-#: templates/tool.html:321
+#: templates/tool.html:331
 msgid "IgM Borrelia"
 msgstr "IgM Borrelia"
 
-#: templates/tool.html:338
+#: templates/tool.html:348
 msgid "IgG Borrelia"
 msgstr "IgG Borrelia"
 
-#: templates/tool.html:355
+#: templates/tool.html:365
 msgid "WB Borrelia"
 msgstr "WB Borrelia"
 
-#: templates/tool.html:381
+#: templates/tool.html:391
 msgid "Calcola"
 msgstr "Calculate"
+
