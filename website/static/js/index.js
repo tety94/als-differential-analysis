@@ -24,9 +24,13 @@ document.addEventListener("DOMContentLoaded", function () {
       if (result.success) {
         let html = `<h4>Risultati predizione</h4><ul class="list-group">`;
         for (const [model, values] of Object.entries(result.results)) {
+        cc = 'SLA';
+        if (values.class == 1){
+        cc = 'NON SLA';
+        }
           html += `
             <li class="list-group-item">
-              <strong>${model}</strong>: classe = ${values.class},
+              <strong>${model}</strong>: ${cc},
               probabilità = ${(values.probability * 100).toFixed(2)}%
             </li>`;
         }

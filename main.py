@@ -29,7 +29,6 @@ for k in features.keys():
 
     numerical_cols = features[k]['numerical_cols']
     categorical_columns = features[k]['categorical_columns']
-    binary_cols = features[k]['binary_cols']
 
     test_folder = os.path.join(base_test_folder, k)
     os.makedirs(test_folder, exist_ok=True)
@@ -38,20 +37,20 @@ for k in features.keys():
     os.makedirs(model_output_folder, exist_ok=True)
 
     # 1. Caricamento dati
-    df = load_data(categorical_columns,numerical_cols, binary_cols)
+    df = load_data(categorical_columns,numerical_cols)
 
     baseline_cols = [t_1_visit]
     baseline = compute_baseline_vs_final(df, baseline_cols, output_folder=f"{test_folder}")
 
     # 2. Report valori null
     missing_report = generate_missing_report(df, test_folder)
+    df = impute_nulls(log, df, categorical_columns)
 
     # 3. Preprocessing colonne
     df = convert_plus_minus(df)
     df, numeric_cols, categorical_cols = separate_columns(df,
                                                           forced_numerical=numerical_cols,
-                                                          forced_categorical=categorical_columns,
-                                                          binary_cols=binary_cols)
+                                                          forced_categorical=categorical_columns)
 
     categorical_cols.remove(target_col)
     categorical_cols.remove(t_1_visit) #rimuovo la colonna diagonsi prima visita
@@ -73,21 +72,12 @@ for k in features.keys():
     null_report = report_nulls(X)
     null_report.to_csv(f'{test_folder}/null_report.csv')
 
-    # Imputazione dei null
-    X = impute_nulls(log, X, categorical_cols, numeric_cols)
 
     # 5. Modelli
     models = get_models()
-    res_df, model_feature_importances, trained_pipelines = train_models(log, k, X, y, numeric_cols, categorical_cols, models, test_folder)
+    res_df, trained_pipelines = train_models(log, k, X, y, numeric_cols, categorical_cols, test_folder)
 
     comparison_df = compare_models_to_baseline(res_df, baseline,trained_pipelines, output_folder=f"{test_folder}", model_output_folder=model_output_folder)
-
-    # 6. Grafici comparativi
-    plot_comparisons(res_df, test_folder)
-    common_features = common_features_plot(model_feature_importances, test_folder)
-
-    # 7. Salvataggio comuni
-    pd.DataFrame({'feature': common_features}).to_csv(f"{test_folder}/common_features.csv", index=False)
 
     log('############################')
     log('############################')

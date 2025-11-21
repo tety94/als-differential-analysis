@@ -18,9 +18,13 @@
                 <label for="site_of_onset">{{ _('Sito d\'esordio') }}</label>
                 <select id="site_of_onset" name="site_of_onset">
                     <option value="">{{ _('Non disponibile') }}</option>
-                    {% for i in range(8) %}
-                    <option value="{{ i }}">{{ i }}</option>
-                    {% endfor %}
+                    <option value="1">{{ _('Bulbare') }}</option>
+                    <option value="2">{{ _('Distale UL') }}</option>
+                    <option value="3">{{ _('Prossimale UL') }}</option>
+                    <option value="4">{{ _('Distale LL') }}</option>
+                    <option value="5">{{ _('Prossimale LL') }}</option>
+                    <option value="6">{{ _('Respiratorio') }}</option>
+                    <option value="7">{{ _('Cognitivo') }}</option>
                 </select>
             </div>
 
@@ -29,9 +33,14 @@
                 <label for="phenotype">{{ _('Fenotipo d\'esordio') }}</label>
                 <select id="phenotype" name="phenotype">
                     <option value="">{{ _('Non disponibile') }}</option>
-                    {% for i in range(1,9) %}
-                    <option value="{{ i }}">{{ i }}</option>
-                    {% endfor %}
+                    <option value="1">{{ _('Classico') }}</option>
+                    <option value="2">{{ _('Bulbare') }}</option>
+                    <option value="3">{{ _('FA') }}</option>
+                    <option value="4">{{ _('FL') }}</option>
+                    <option value="5">{{ _('Piramidale') }}</option>
+                    <option value="6">{{ _('Respiratorio') }}</option>
+                    <option value="7">{{ _('PLMN') }}</option>
+                    <option value="8">{{ _('PUMN') }}</option>
                 </select>
             </div>
 
@@ -40,9 +49,11 @@
                 <label for="type_onset">{{ _('Tipo d\'esordio') }}</label>
                 <select id="type_onset" name="type_onset">
                     <option value="">{{ _('Non disponibile') }}</option>
-                    {% for i in range(5) %}
-                    <option value="{{ i }}">{{ i }}</option>
-                    {% endfor %}
+                    <option value="0">{{ _('Bulbare') }}</option>
+                    <option value="1">{{ _('Spinale') }}</option>
+                    <option value="2">{{ _('Respiratorio') }}</option>
+                    <option value="3">{{ _('Cognitivo') }}</option>
+                    <option value="4">{{ _('Cachettico') }}</option>
                 </select>
             </div>
 
@@ -51,9 +62,9 @@
                 <label for="side_of_onset">{{ _('Lato d\'esordio') }}</label>
                 <select id="side_of_onset" name="side_of_onset">
                     <option value="">{{ _('Non disponibile') }}</option>
-                    {% for i in range(1,4) %}
-                    <option value="{{ i }}">{{ i }}</option>
-                    {% endfor %}
+                    <option value="1">{{ _('Destro') }}</option>
+                    <option value="2">{{ _('Sinistro') }}</option>
+                    <option value="3">{{ _('Bilaterale') }}</option>
                 </select>
             </div>
 
@@ -62,9 +73,10 @@
                 <label for="elescorial_class">{{ _('El escorial class') }}</label>
                 <select id="elescorial_class" name="elescorial_class">
                     <option value="">{{ _('Non disponibile') }}</option>
-                    {% for i in range(4) %}
-                    <option value="{{ i }}">{{ i }}</option>
-                    {% endfor %}
+                    <option value="0">{{ _('Definita') }}</option>
+                    <option value="1">{{ _('Probabile') }}</option>
+                    <option value="2">{{ _('Probabile con supporto') }}</option>
+                    <option value="3">{{ _('Possibile') }}</option>
                 </select>
             </div>
 

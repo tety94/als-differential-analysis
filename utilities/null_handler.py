@@ -14,41 +14,46 @@ def report_nulls(df):
     return report
 
 
-def impute_nulls(log, df, categorical_cols, numerical_cols, threshold_mode=0.5):
+
+def impute_nulls(log, df, categorical_cols, threshold_mode=0.5, use_missing_for_cat=True):
     """
-    Imputa i valori null in base al tipo di colonna.
-    - categorical_cols: lista colonne categoriali
-    - numerical_cols: lista colonne numeriche
-    - threshold_mode: percentuale minima per usare la moda su categoriche
+    Imputa i valori null nelle colonne categoriali e garantisce che tutte siano stringhe.
+    Le numeriche non vengono toccate (CatBoost gestisce i NaN internamente).
+
+    Parametri
+    ----------
+    log : funzione
+        Funzione di logging
+    df : pd.DataFrame
+        DataFrame da imputare
+    categorical_cols : list
+        Colonne categoriali
+    threshold_mode : float
+        Percentuale minima per usare la moda su categoriali (se use_missing_for_cat=False)
+    use_missing_for_cat : bool
+        Se True, i null nelle categoriali diventano 'missing'
     """
     df = df.copy()
     df.replace(['nan', 'NaN', 'None', ''], np.nan, inplace=True)
 
-    # Categorical / binary
     for col in categorical_cols:
-        if col in df.columns:
+        if col not in df.columns:
+            continue
+
+        # riempi i valori mancanti
+        if use_missing_for_cat:
+            log(f'{col} Categorical: filling missing with "missing"')
+            df[col] = df[col].fillna("missing")
+        else:
             mode = df[col].mode()
             if not mode.empty and (df[col].value_counts(normalize=True).iloc[0] >= threshold_mode):
-                log(f'{col} Categorical: mode')
+                log(f'{col} Categorical: filling missing with mode')
                 df[col] = df[col].fillna(mode[0])
             else:
-                # Se nessun valore domina, campiona casualmente dai valori esistenti
-                log(f'{col} Categorical: random')
-                if(col == 'phenotype (1-8)'):
-                    print(col)
+                log(f'{col} Categorical: filling missing randomly')
                 df[col] = df[col].fillna(np.random.choice(df[col].dropna()))
 
-    # Numerical
-    for col in numerical_cols:
-        if col in df.columns:
-            # Se pochi nulli, usa media
-            null_ratio = df[col].isna().mean()
-            if null_ratio < 0.1:
-                log(f'{col} Numerical: mean')
-                df[col] = df[col].fillna(df[col].mean())
-            else:
-                # Altrimenti campiona dai valori esistenti
-                log(f'{col} Numerical: random')
-                df[col] = df[col].fillna(np.random.choice(df[col].dropna()))
+        # converti tutto in stringa, così CatBoost vede solo stringhe
+        df[col] = df[col].apply(lambda x: str(int(x)) if isinstance(x, float) and x.is_integer() else str(x))
 
     return df

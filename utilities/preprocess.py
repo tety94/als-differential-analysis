@@ -12,7 +12,7 @@ def convert_plus_minus(df):
         return x
     return df.map(conv)
 
-def separate_columns(df, forced_numerical=[], forced_categorical=[], binary_cols=[]):
+def separate_columns(df, forced_numerical=[], forced_categorical=[]):
     numeric_cols, categorical_cols = [], []
     df = df.replace(',', '.', regex=True)
     for col in df.columns:
@@ -21,7 +21,7 @@ def separate_columns(df, forced_numerical=[], forced_categorical=[], binary_cols
             df[col] = s.astype(str)
             categorical_cols.append(col)
             continue
-        if col in forced_numerical or col in binary_cols:
+        if col in forced_numerical:
             df[col] = pd.to_numeric(s, errors='coerce')
             numeric_cols.append(col)
             continue

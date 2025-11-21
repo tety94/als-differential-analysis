@@ -10,27 +10,27 @@ def get_models():
         'CatBoost': CatBoostClassifier(
             verbose=0,
             random_state=random_state,
-            class_weights=[1, 2]
+            class_weights='balanced'
         ),
 
-        'HistGradientBoosting': HistGradientBoostingClassifier(
-            max_iter=200,
-            random_state=random_state
-        ),
-
-        'XGBoost': XGBClassifier(
-            eval_metric="logloss",
-            random_state=random_state,
-            n_jobs=-1,
-            tree_method="hist"     # più veloce, gestisce bene i missing
-        ),
-
-        'LightGBM': LGBMClassifier(
-            class_weight="balanced",
-            random_state=random_state,
-            n_jobs=-1,
-            verbose=-1
-        ),
+        # 'HistGradientBoosting': HistGradientBoostingClassifier(
+        #     max_iter=200,
+        #     random_state=random_state
+        # ),
+        #
+        # 'XGBoost': XGBClassifier(
+        #     eval_metric="logloss",
+        #     random_state=random_state,
+        #     n_jobs=-1,
+        #     tree_method="hist"     # più veloce, gestisce bene i missing
+        # ),
+        #
+        # 'LightGBM': LGBMClassifier(
+        #     class_weight="balanced",
+        #     random_state=random_state,
+        #     n_jobs=-1,
+        #     verbose=-1
+        # ),
     }
 
     return models

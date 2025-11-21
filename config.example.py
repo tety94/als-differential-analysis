@@ -14,9 +14,6 @@ target_col = ''
 t_1_visit = ''
 id_cols = []
 
-categorical_columns = []
-forced_numerical_cols = []
-binary_cols = []
 
 # PARAMETRI
 n_splits = 5
