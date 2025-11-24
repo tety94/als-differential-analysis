@@ -4,7 +4,7 @@ set -e  # esci se qualche comando fallisce
 # --- Configurazione ---
 APP_DIR="/srv/python-projects/als-differential-analysis"
 VENV_DIR="$APP_DIR/venv"
-SERVICE_NAME="als-differential-analysis"
+SERVICE_NAME="als-differential-analysis.service"
 GIT_BRANCH="main"   # o il branch che usi
 
 # --- Passa alla cartella dell'app ---
