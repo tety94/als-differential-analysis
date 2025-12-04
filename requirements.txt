@@ -12,3 +12,5 @@ pymysql
 gunicorn
 cryptography
 flask-babel
+shap
+openpyxl

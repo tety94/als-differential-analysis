@@ -3,6 +3,7 @@ import time
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+import shap
 import numpy as np
 from sklearn.model_selection import StratifiedKFold, cross_validate, cross_val_predict
 from sklearn.metrics import confusion_matrix, classification_report, roc_curve, auc
@@ -13,6 +14,7 @@ from website.db_connection import engine
 from catboost import CatBoostClassifier
 from utilities.CatBoostWrapper import CatBoostWrapper
 from config import top_n_features, n_splits
+from utilities.shap import generate_shap_plots
 
 
 # =====================================================================
@@ -195,6 +197,8 @@ def train_models(log, model_type, X, y, numeric_cols, categorical_cols, folder):
         folder=folder,
         top_n=top_n_features
     )
+
+    generate_shap_plots(model.model_, X_model, cat_features_idx, folder=folder)
 
     # ==========================================================
     # Salva modello e versione

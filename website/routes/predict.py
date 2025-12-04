@@ -9,6 +9,7 @@ from datetime import datetime
 import numpy as np
 from website.utilities import clean_for_model, clean_for_db
 from config import features, rename_map
+from catboost import Pool
 
 predict_bp = Blueprint('predict', __name__)
 
@@ -136,19 +137,57 @@ def predict():
     for col in numeric_fields:
         if col in input_df_model.columns:
             input_df_model[col] = input_df_model[col].astype(float)
-    print(feature_order)
-    print(input_df_model.columns)
-    # exit()
+
+    cat_features_idx = [input_df_model.columns.get_loc(c) for c in categorical_fields if c in input_df_model.columns]
 
     # predizione
     pred_class = int(model_obj.predict(input_df_model)[0])
     pred_proba = float(model_obj.predict_proba(input_df_model)[0][pred_class])
 
-    results = {model_name: {"class": pred_class, "probability": pred_proba}}
+    # ----------------------------------------
+    # SHAP values per il singolo paziente
+    # ----------------------------------------
+    try:
+        pool = Pool(
+            data=input_df_model,
+            cat_features=cat_features_idx  # lista degli indici delle colonne categoriche
+        )
+        shap_matrix = model_obj.model_.get_feature_importance(
+            data=pool,
+            type="ShapValues"
+        )
+
+        shap_values = shap_matrix[0, :-1].tolist()
+        base_value = float(shap_matrix[0, -1])
+
+        # crea un dizionario {feature: shap_value}
+        shap_dict = {
+            feature_order[i]: float(shap_values[i])
+            for i in range(len(feature_order))
+        }
+
+        # puoi salvare anche la predizione "spiegata":
+        # base_value + somma(shap) -> deve dare il logit (per classificazione)
+        shap_explanation = {
+            "base_value": base_value,
+            "shap_values": shap_dict,
+            "sum_shap": float(sum(shap_values)),
+        }
+
+    except Exception as e:
+        print("Errore calcolo SHAP:", e)
+        shap_explanation = None
+
+
+
+    results = {model_name: {"class": pred_class, "probability": pred_proba, "shap_explanation" : shap_explanation}}
 
     # salva risultati nel paziente
     patient.results = results
-    patient.model_log = {"input_summary": record_dict}
+    patient.model_log = {
+        "input_summary": record_dict,
+        "shap_explanation": shap_explanation
+    }
     patient.created_at = datetime.utcnow()
 
     session.commit()

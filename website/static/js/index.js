@@ -24,15 +24,36 @@ document.addEventListener("DOMContentLoaded", function () {
       if (result.success) {
         let html = `<h4>Risultati predizione</h4><ul class="list-group">`;
         for (const [model, values] of Object.entries(result.results)) {
-        cc = 'SLA';
-        if (values.class == 1){
-        cc = 'NON SLA';
-        }
-          html += `
-            <li class="list-group-item">
-              <strong>${model}</strong>: ${cc},
-              probabilità = ${(values.probability * 100).toFixed(2)}%
-            </li>`;
+            let cc = 'SLA';
+            if (values.class == 0) {
+                cc = 'NON SLA';
+            }
+
+            html += `
+                <li class="list-group-item">
+                    <strong>${model}</strong>: ${cc}, probabilità = ${(values.probability * 100).toFixed(2)}%
+            `;
+
+            // --- Aggiungi SHAP explanation se presente ---
+            if (values.shap_explanation) {
+                const shap = values.shap_explanation;
+
+                html += `<ul class="list-group mt-2">
+                            <li class="list-group-item"><strong>Base value:</strong> ${shap.base_value.toFixed(4)}</li>
+                            <li class="list-group-item"><strong>Somma SHAP:</strong> ${shap.sum_shap.toFixed(4)}</li>
+                         </ul>`;
+
+                html += `<ul class="list-group mt-2">`;
+                for (const [feature, shap_val] of Object.entries(shap.shap_values)) {
+                    html += `<li class="list-group-item p-1">
+                                 <strong>${feature}</strong>: ${Number(shap_val).toFixed(4)}
+                             </li>`;
+                }
+                html += `</ul>`;
+            }
+
+
+            html += `</li>`;
         }
         html += `</ul>`;
         resultsBox.innerHTML = html;
