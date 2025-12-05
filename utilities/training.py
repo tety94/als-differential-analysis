@@ -3,15 +3,12 @@ import time
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
-import shap
-import numpy as np
 from sklearn.model_selection import StratifiedKFold, cross_validate, cross_val_predict
 from sklearn.metrics import confusion_matrix, classification_report, roc_curve, auc
 from utilities.utils import save_plot
 from sqlalchemy.orm import sessionmaker
 from website.models import Model
 from website.db_connection import engine
-from catboost import CatBoostClassifier
 from utilities.CatBoostWrapper import CatBoostWrapper
 from config import top_n_features, n_splits, metrics
 from utilities.shap import generate_shap_plots, save_shap_values_csv
