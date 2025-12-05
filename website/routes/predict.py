@@ -21,6 +21,7 @@ Session = sessionmaker(bind=engine)
 @predict_bp.route('/predict', methods=['POST'])
 def predict():
     form_data = request.get_json()
+    form_data['delta_weight'] = int(form_data['weight_diagnosis']) - int(form_data['hbw'])
     print("📦 Dati ricevuti:", form_data)
 
     session = Session()
@@ -132,7 +133,6 @@ def predict():
     # 3. Assicurati tipi corretti
     for col in categorical_fields:
         if col in input_df_model.columns:
-            print(col)
             input_df_model[col] = input_df_model[col].astype(str)
     for col in numeric_fields:
         if col in input_df_model.columns:
