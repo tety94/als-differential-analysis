@@ -17,11 +17,26 @@ ML_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), '../models')
 
 Session = sessionmaker(bind=engine)
 
+def to_int_safe(value):
+    if value is None or value == '':
+        return None
+    try:
+        return int(value)
+    except ValueError:
+        return None
+
 
 @predict_bp.route('/predict', methods=['POST'])
 def predict():
     form_data = request.get_json()
-    form_data['delta_weight'] = int(form_data['weight_diagnosis']) - int(form_data['hbw'])
+
+    weight_diag = to_int_safe(form_data['weight_diagnosis'])
+    hbw = to_int_safe(form_data['hbw'])
+    if weight_diag is not None and hbw is not None:
+        form_data['delta_weight'] = weight_diag - hbw
+    else:
+        form_data['delta_weight'] = None
+
     print("📦 Dati ricevuti:", form_data)
 
     session = Session()
