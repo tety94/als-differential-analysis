@@ -57,8 +57,6 @@ for k in features.keys():
 
     # 4. Separazione X / y
     y = df[target_col].astype(int)
-    # siccome per me SLA = 0 inverto
-    y = abs(y - 1)
 
     X = df.drop(columns=[target_col])
     X = X.drop(columns=baseline_cols) #rimuovo la colonna diagonsi prima visita
@@ -74,7 +72,6 @@ for k in features.keys():
 
     null_report = report_nulls(X)
     null_report.to_csv(f'{test_folder}/null_report.csv')
-
 
     # 5. Modelli
     models = get_models()

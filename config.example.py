@@ -13,6 +13,11 @@ os.makedirs(test_folder, exist_ok=True)
 target_col = ''
 t_1_visit = ''
 id_cols = []
+metrics = {
+    'third_level': 'precision',
+    'neurologi': 'f1',
+    'medici_base': 'recall'
+}
 
 
 # PARAMETRI

@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 from config import csv_path, target_col, t_1_visit
 import logging
 
@@ -19,5 +20,8 @@ def load_data(categorical_columns,numerical_cols):
     df[t_1_visit] = df[t_1_visit].apply(lambda x: 0 if int(x) == 0 else 1)
 
     df = df[categorical_columns + numerical_cols + [target_col, t_1_visit]]
+
+    # nel nostro dataset SLA = 0, altre malattie > 0
+    df[target_col] = np.where(df[target_col] == 0, 1, 0)
 
     return df

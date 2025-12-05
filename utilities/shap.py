@@ -4,7 +4,7 @@ import numpy as np
 import os
 from openpyxl import Workbook
 from openpyxl.styles import PatternFill
-
+import pandas as pd
 
 # =========================================
 # 1️⃣ SHAP values
@@ -191,9 +191,6 @@ def generate_shap_plots(model, X, cat_features_idx, folder):
         filename
     )
 
-    # colors_dict = build_categorical_color_dict(X, cat_features_idx)
-    # shap_summary_custom(shap_values, X, colors_dict, filename)
-
     # Plot extra per categorical
     colors_dict = plot_shap_categorical_manual(shap_values, X, cat_features_idx, folder)
 
@@ -240,3 +237,42 @@ def shap_summary_custom(shap_values, X, colors_dict, output_path=None):
         print(f"Plot salvato in {output_path}")
 
     plt.show()
+
+
+def save_shap_values_csv(model, X, output_path="shap_values.csv"):
+    """
+    Calcola i valori SHAP per ogni campione e li salva in un CSV.
+
+    Parameters
+    ----------
+    model : fitted model
+        Il modello già allenato, compatibile con shap.TreeExplainer
+    X : pd.DataFrame o np.array
+        Il dataset usato per calcolare i valori shap
+    cat_features_idx : list o None
+        Indici delle variabili categoriche (serve solo per CatBoost)
+    output_path : str
+        Percorso del CSV di output
+    """
+
+    # SHAP explainer
+    try:
+        explainer = shap.TreeExplainer(model)
+    except Exception:
+        explainer = shap.KernelExplainer(model.predict, X.sample(100))  # fallback molto più lento
+
+    # Compute SHAP values
+    shap_values = explainer.shap_values(X)
+
+    # Se il modello è binario, shap_values è una lista (prendo la classe 1)
+    if isinstance(shap_values, list):
+        shap_values = shap_values[1]
+
+    # Converto in DataFrame
+    shap_df = pd.DataFrame(shap_values, columns=X.columns)
+
+    # Salvo
+    shap_df.to_csv(output_path, index=False)
+
+    print(f"SHAP values salvati in: {output_path}")
+    return shap_df

@@ -13,8 +13,8 @@ from website.models import Model
 from website.db_connection import engine
 from catboost import CatBoostClassifier
 from utilities.CatBoostWrapper import CatBoostWrapper
-from config import top_n_features, n_splits
-from utilities.shap import generate_shap_plots
+from config import top_n_features, n_splits, metrics
+from utilities.shap import generate_shap_plots, save_shap_values_csv
 
 
 # =====================================================================
@@ -116,13 +116,15 @@ def train_models(log, model_type, X, y, numeric_cols, categorical_cols, folder):
     # ==========================================================
     # Cross-validation
     # ==========================================================
+    metric = metrics[model_type]
+
     start_time = time.time()
     scores = cross_validate(
         model,
         X_model,
         y,
         cv=skf,
-        scoring=['accuracy', 'f1'],
+        scoring=metric,
         n_jobs=-1
     )
 
@@ -137,10 +139,6 @@ def train_models(log, model_type, X, y, numeric_cols, categorical_cols, folder):
 
     elapsed_time = time.time() - start_time
     log(f"⏱ Tempo esecuzione {model_name}: {elapsed_time:.1f} sec")
-
-    acc_mean = scores['test_accuracy'].mean()
-    f1_mean = scores['test_f1'].mean()
-    log(f"Accuracy CV: {acc_mean:.4f} | F1 CV: {f1_mean:.4f}")
 
     report = classification_report(y, y_pred, output_dict=True)
 
@@ -199,7 +197,7 @@ def train_models(log, model_type, X, y, numeric_cols, categorical_cols, folder):
     )
 
     generate_shap_plots(model.model_, X_model, cat_features_idx, folder=folder)
-
+    save_shap_values_csv(model.model_, X_model, output_path=f"{folder}/shap_values.csv")
     # ==========================================================
     # Salva modello e versione
     # ==========================================================
@@ -216,10 +214,12 @@ def train_models(log, model_type, X, y, numeric_cols, categorical_cols, folder):
     # precision e recall globali (weighted)
     precision_global = report["weighted avg"]["precision"]
     recall_global = report["weighted avg"]["recall"]
+    f1_global = report["weighted avg"]["f1-score"]
+    accuracy_global = report["accuracy"]
 
     results[model_name] = {
-        'accuracy': acc_mean,
-        'f1': f1_mean,
+        'accuracy': accuracy_global,
+        'f1': f1_global,
         'auc': roc_auc,
         "precision_0": precision_0,
         "precision_1": precision_1,
@@ -240,3 +240,4 @@ def train_models(log, model_type, X, y, numeric_cols, categorical_cols, folder):
     )
 
     return results, trained_pipelines
+
