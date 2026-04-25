@@ -38,11 +38,15 @@ def compute_baseline_vs_final(df, visit_cols, final_col="final_diagnosis (0-4)",
 
     # Consideriamo solo righe complete per le colonne rilevanti
     relevant_cols = [final_col] + visit_cols
-    df_clean = df[relevant_cols].dropna()
+    # df_clean = df[relevant_cols].dropna()
 
-    y_true = df_clean[final_col].astype(int)
+    # y_true = df_clean[final_col].astype(int)
 
     for col in visit_cols:
+        df_clean = df[[final_col, col]].dropna()
+
+        y_true = df_clean[final_col].astype(int)
+
         if col not in df_clean.columns:
             print(f"⚠️ Colonna '{col}' non trovata, salto...")
             continue

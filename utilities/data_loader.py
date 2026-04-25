@@ -13,15 +13,24 @@ def load_data(categorical_columns,numerical_cols):
 
     # Binarizzazione target
     df = df[~df[target_col].isna()].copy()
+    df[target_col] = pd.to_numeric(df[target_col], errors='coerce')
+    df = df.dropna(subset=[target_col])
+    df[target_col] = (df[target_col] != 0).astype(int)
     df[target_col] = df[target_col].apply(lambda x: 0 if int(x) == 0 else 1)
 
     # Binarizzazione target_medici_1_visit
     df = df[~df[t_1_visit].isna()].copy()
+    df[t_1_visit] = pd.to_numeric(df[t_1_visit], errors='coerce')
+    df = df.dropna(subset=[t_1_visit])
+    df[t_1_visit] = (df[t_1_visit] != 0).astype(int)
     df[t_1_visit] = df[t_1_visit].apply(lambda x: 0 if int(x) == 0 else 1)
 
     df = df[categorical_columns + numerical_cols + [target_col, t_1_visit]]
 
+    df = df[~df['site_of_onset'].isin([6,7])]
+
     # nel nostro dataset SLA = 0, altre malattie > 0
     df[target_col] = np.where(df[target_col] == 0, 1, 0)
+    df[t_1_visit] = np.where(df[t_1_visit] == 0, 1, 0)
 
     return df

@@ -19,8 +19,7 @@ def compare_models_to_baseline(
     Confronta i modelli con la baseline e salva i modelli che la superano.
 
     Parameters
-    ----------
-    model_results : dict or pd.DataFrame
+    -model_results : dict or pd.DataFrame
         Risultati dei modelli dal training (accuracy, f1, auc, precision, recall..)
     baseline : dict
         Metriche della baseline per ogni visit
@@ -31,7 +30,8 @@ def compare_models_to_baseline(
     key_metric : str
         Metrica principale per decidere se salvare il modello
     model_output_folder : str
-        Cartella dove salvare i modelli .joblib
+        Cartella dove salvare i modelli .joblib---------
+
 
     Returns
     -------
