@@ -4,7 +4,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.model_selection import StratifiedKFold, cross_validate, cross_val_predict
-from sklearn.metrics import confusion_matrix, classification_report, roc_curve, auc
+from sklearn.metrics import confusion_matrix, classification_report, roc_curve, auc, precision_recall_curve, average_precision_score
 from utilities.utils import save_plot
 from sqlalchemy.orm import sessionmaker
 from website.models import Model
@@ -12,6 +12,10 @@ from website.db_connection import engine
 from utilities.CatBoostWrapper import CatBoostWrapper
 from config import top_n_features, n_splits, metrics
 from utilities.shap import generate_shap_plots, save_shap_values_csv
+from utilities.dependence_plots import generate_dependence_report
+from utilities.calibration import plot_calibration
+from utilities.feature_ablation import feature_ablation_curve, feature_addition_curve
+import json
 
 
 # =====================================================================
@@ -89,18 +93,17 @@ def train_models(log, model_type, X, y, numeric_cols, categorical_cols, folder):
     skf = StratifiedKFold(n_splits=n_splits, shuffle=True, random_state=42)
 
     # ==========================================================
-    # CatBoost: indices delle colonne categoriali
+    # CatBoost: categorical column indices
     # ==========================================================
     cat_features_idx = [X.columns.get_loc(c) for c in categorical_cols]
 
     model_name = "CatBoost"
-    log(f"\n--- Modello: {model_name} ---")
-    print(f"\n--- Modello: {model_name} ---")
+    log(f"\n--- Model: {model_name} ---")
 
     X_model = X.copy()
 
     # ==========================================================
-    # Definizione modello CatBoost
+    # CatBoost model definition
     # ==========================================================
     model = CatBoostWrapper(
         iterations=500,
@@ -135,7 +138,7 @@ def train_models(log, model_type, X, y, numeric_cols, categorical_cols, folder):
     )
 
     elapsed_time = time.time() - start_time
-    log(f"⏱ Tempo esecuzione {model_name}: {elapsed_time:.1f} sec")
+    log(f"[timing] {model_name} run time: {elapsed_time:.1f} sec")
 
     report = classification_report(y, y_pred, output_dict=True)
 
@@ -178,23 +181,102 @@ def train_models(log, model_type, X, y, numeric_cols, categorical_cols, folder):
     plt.close(fig)
 
     # ==========================================================
-    # Fit finale
+    # Precision-Recall curve
+    # (more informative than ROC when classes are imbalanced)
     # ==========================================================
-    model.fit(X_model, y, cat_features=cat_features_idx)
+    precision_curve, recall_curve, _ = precision_recall_curve(y, y_proba)
+    avg_precision = average_precision_score(y, y_proba)
+
+    fig, ax = plt.subplots()
+    ax.plot(recall_curve, precision_curve, label=f'AP = {avg_precision:.3f}')
+    baseline_rate = sum(y) / len(y)
+    ax.axhline(baseline_rate, linestyle='--', color='gray', label=f'Baseline (prevalence) = {baseline_rate:.3f}')
+    ax.set_title(f'Precision-Recall Curve - {model_name}')
+    ax.set_xlabel('Recall')
+    ax.set_ylabel('Precision')
+    ax.legend()
+
+    save_plot(fig, os.path.join(folder, f'precision_recall_curve_{model_name}.png'))
+    plt.close(fig)
+    log(f"[metrics] {model_name}: AUC = {roc_auc:.3f}, Average Precision = {avg_precision:.3f}")
 
     # ==========================================================
-    # Salvataggio Feature Importance
+    # Calibration (Brier score + ECE + reliability diagram)
     # ==========================================================
-    save_catboost_feature_importances(
+    calibration_scores = plot_calibration(y, y_proba, model_name=model_name, folder=folder, log=log)
+
+    # ==========================================================
+    # Final fit
+    # ==========================================================
+    model.fit(X_model, y, cat_features=cat_features_idx)
+    log(f"[fit] {model_name} final fit on full dataset complete.")
+
+    # ==========================================================
+    # Feature importance
+    # ==========================================================
+    fi_sorted = save_catboost_feature_importances(
         model=model,
         feature_names=X_model.columns,
         model_name=model_name,
         folder=folder,
         top_n=top_n_features
     )
+    log(f"[feature_importance] Top {top_n_features} features saved for {model_name}.")
+
+    # ==========================================================
+    # Sensitivity curve: progressive removal of the most important
+    # features, with real retraining, to see where AUC stabilizes
+    # ==========================================================
+    feature_ablation_curve(
+        X=X_model,
+        y=y,
+        categorical_cols=categorical_cols,
+        feature_importance_ranked=fi_sorted,
+        folder=folder,
+        model_name=model_name,
+        step=1,
+        n_splits=n_splits,
+        log=log
+    )
+
+    # ==========================================================
+    # Complementary curve: adding the most important features one
+    # group at a time, to see how few features are needed for a
+    # stable AUC (parallelized the same way as the ablation curve)
+    # ==========================================================
+    feature_addition_curve(
+        X=X_model,
+        y=y,
+        categorical_cols=categorical_cols,
+        feature_importance_ranked=fi_sorted,
+        folder=folder,
+        model_name=model_name,
+        step=1,
+        n_splits=n_splits,
+        log=log
+    )
 
     generate_shap_plots(model.model_, X_model, cat_features_idx, folder=folder)
-    save_shap_values_csv(model.model_, X_model, output_path=f"{folder}/shap_values.csv")
+    shap_df = save_shap_values_csv(model.model_, X_model, output_path=f"{folder}/shap_values.csv")
+    log(f"[shap] SHAP plots and values saved for {model_name}.")
+
+    # ==========================================================
+    # Save inputs for the standalone dependence-plot script
+    # (avoids rerunning the whole training just to regenerate the plots)
+    # ==========================================================
+    X_model.to_csv(os.path.join(folder, "X_model.csv"), index=False)
+    with open(os.path.join(folder, "feature_columns.json"), "w") as f:
+        json.dump({"numeric_cols": numeric_cols, "categorical_cols": categorical_cols}, f)
+
+    generate_dependence_report(
+        X=X_model,
+        shap_df=shap_df,
+        numeric_cols=numeric_cols,
+        categorical_cols=categorical_cols,
+        folder=folder,
+        log=log
+    )
+
     # ==========================================================
     # Salva modello e versione
     # ==========================================================
@@ -218,6 +300,9 @@ def train_models(log, model_type, X, y, numeric_cols, categorical_cols, folder):
         'accuracy': accuracy_global,
         'f1': f1_global,
         'auc': roc_auc,
+        'average_precision': avg_precision,
+        'brier_score': calibration_scores['brier_score'],
+        'ece': calibration_scores['ece'],
         "precision_0": precision_0,
         "precision_1": precision_1,
         "recall_0": recall_0,

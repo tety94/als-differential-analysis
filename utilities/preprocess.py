@@ -25,7 +25,7 @@ def separate_columns(df, forced_numerical=[], forced_categorical=[]):
             df[col] = pd.to_numeric(s, errors='coerce')
             numeric_cols.append(col)
             continue
-        # logica automatica
+        # automatic detection logic
         converted = pd.to_numeric(s, errors='coerce')
         numeric_ratio = converted.notna().mean()
         if numeric_ratio > 0.5 and df[col].nunique() > 5:

@@ -2,7 +2,7 @@ import pandas as pd
 import logging
 
 def generate_missing_report(df, output_folder):
-    logging.info("🔍 Avvio missing report")
+    logging.info("🔍 Starting missing values report")
 
     missing = df.isna().sum()
     missing_percent = df.isna().mean() * 100
@@ -10,6 +10,6 @@ def generate_missing_report(df, output_folder):
     report = report.sort_values('missing_percent', ascending=False)
     report_path = f"{output_folder}/missing_report.csv"
     report.to_csv(report_path)
-    print(f"✅ Report valori null salvato in: {report_path}")
-    logging.info(f"✅ Report valori null salvato in: {report_path}")
+    print(f"✅ Missing values report saved to: {report_path}")
+    logging.info(f"✅ Missing values report saved to: {report_path}")
     return report

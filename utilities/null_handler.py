@@ -4,7 +4,7 @@ import logging
 
 
 def report_nulls(df):
-    """Restituisce un DataFrame con numero e percentuale di null per colonna."""
+    """Returns a DataFrame with the count and percentage of nulls per column."""
     null_counts = df.isna().sum()
     null_percent = df.isna().mean() * 100
     report = pd.DataFrame({
@@ -17,21 +17,23 @@ def report_nulls(df):
 
 def impute_nulls(log, df, categorical_cols, threshold_mode=0.5, use_missing_for_cat=True):
     """
-    Imputa i valori null nelle colonne categoriali e garantisce che tutte siano stringhe.
-    Le numeriche non vengono toccate (CatBoost gestisce i NaN internamente).
+    Imputes null values in categorical columns and ensures they are all
+    strings. Numeric columns are left untouched (CatBoost handles NaNs
+    internally).
 
-    Parametri
+    Parameters
     ----------
-    log : funzione
-        Funzione di logging
+    log : callable
+        Logging function
     df : pd.DataFrame
-        DataFrame da imputare
+        DataFrame to impute
     categorical_cols : list
-        Colonne categoriali
+        Categorical columns
     threshold_mode : float
-        Percentuale minima per usare la moda su categoriali (se use_missing_for_cat=False)
+        Minimum share required to use the mode on categorical columns
+        (if use_missing_for_cat=False)
     use_missing_for_cat : bool
-        Se True, i null nelle categoriali diventano 'missing'
+        If True, nulls in categorical columns become 'missing'
     """
     df = df.copy()
     df.replace(['nan', 'NaN', 'None', ''], np.nan, inplace=True)
@@ -40,7 +42,7 @@ def impute_nulls(log, df, categorical_cols, threshold_mode=0.5, use_missing_for_
         if col not in df.columns:
             continue
 
-        # riempi i valori mancanti
+        # fill missing values
         if use_missing_for_cat:
             log(f'{col} Categorical: filling missing with "missing"')
             df[col] = df[col].fillna("missing")
@@ -53,7 +55,7 @@ def impute_nulls(log, df, categorical_cols, threshold_mode=0.5, use_missing_for_
                 log(f'{col} Categorical: filling missing randomly')
                 df[col] = df[col].fillna(np.random.choice(df[col].dropna()))
 
-        # converti tutto in stringa, così CatBoost vede solo stringhe
+        # convert everything to string, so CatBoost only sees strings
         df[col] = df[col].apply(lambda x: str(int(x)) if isinstance(x, float) and x.is_integer() else str(x))
 
     return df

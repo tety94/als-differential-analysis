@@ -10,14 +10,14 @@ def plot_comparisons(res_df, folder):
     fig, ax = plt.subplots(figsize=(10, 5))
     sns.barplot(x=res_df.index, y='f1', data=res_df.sort_values('f1', ascending=False), ax=ax)
     plt.xticks(rotation=45);
-    plt.title('F1 score medio per modello');
+    plt.title('Mean F1 score per model');
     plt.tight_layout()
     save_plot(fig, os.path.join(folder, 'f1_comparison.png'))
 
     fig, ax = plt.subplots(figsize=(10, 5))
     sns.barplot(x=res_df.index, y='accuracy', data=res_df.sort_values('accuracy', ascending=False), ax=ax)
     plt.xticks(rotation=45);
-    plt.title('Accuracy media per modello');
+    plt.title('Mean accuracy per model');
     plt.tight_layout()
     save_plot(fig, os.path.join(folder, 'accuracy_comparison.png'))
 

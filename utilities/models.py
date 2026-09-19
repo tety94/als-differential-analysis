@@ -22,7 +22,7 @@ def get_models():
         #     eval_metric="logloss",
         #     random_state=random_state,
         #     n_jobs=-1,
-        #     tree_method="hist"     # più veloce, gestisce bene i missing
+        #     tree_method="hist"     # faster, handles missing values well
         # ),
         #
         # 'LightGBM': LGBMClassifier(

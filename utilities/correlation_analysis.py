@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-Modulo: correlation_analysis
-Analisi delle correlazioni tra le variabili numeriche e rispetto al target.
+Module: correlation_analysis
+Correlation analysis between numeric variables and against the target.
 """
 
 import os
@@ -16,45 +16,47 @@ import logging
 
 def correlation_analysis(X, y, output_folder, threshold=0.8):
     """
-    Esegue l'analisi delle correlazioni tra le variabili numeriche e col target.
+    Runs the correlation analysis between numeric variables and against
+    the target.
 
-    Parametri
+    Parameters
     ----------
     X : pd.DataFrame
-        Dataset delle feature (solo colonne numeriche vengono considerate)
-    y : pd.Series o np.array
-        Variabile target (numerica)
+        Feature dataset (only numeric columns are considered)
+    y : pd.Series or np.array
+        Target variable (numeric)
     output_folder : str
-        Cartella in cui salvare i risultati
+        Folder where results are saved
     threshold : float
-        Soglia oltre la quale due variabili sono considerate fortemente correlate
+        Threshold above which two variables are considered strongly
+        correlated
 
     Output
     ------
-    - CSV con la matrice di correlazione
-    - CSV con le coppie di feature fortemente correlate
-    - CSV con la correlazione di ogni feature con l'output
-    - Heatmap delle correlazioni salvata come PNG
+    - CSV with the correlation matrix
+    - CSV with strongly correlated feature pairs
+    - CSV with each feature's correlation with the target
+    - Correlation heatmap saved as PNG
     """
 
     log = logging.info
-    log("🔍 Avvio analisi delle correlazioni numeriche")
+    log("🔍 Starting numeric correlation analysis")
 
-    # Seleziona solo le colonne numeriche
+    # Select only numeric columns
     num_cols = X.select_dtypes(include=[np.number]).columns.tolist()
     if not num_cols:
-        log("⚠️ Nessuna colonna numerica trovata per analizzare le correlazioni.")
+        log("⚠️ No numeric column found to analyze correlations.")
         return
 
     X_num = X[num_cols].copy()
 
-    # Matrice di correlazione
+    # Correlation matrix
     corr_matrix = X_num.corr(method='pearson')
     corr_path = os.path.join(output_folder, "correlation_matrix.csv")
     corr_matrix.to_csv(corr_path)
-    log(f"Matrice di correlazione salvata in {corr_path}")
+    log(f"Correlation matrix saved to {corr_path}")
 
-    # Coppie fortemente correlate
+    # Strongly correlated pairs
     strong_corrs = (
         corr_matrix.where(np.triu(np.ones(corr_matrix.shape), k=1).astype(bool))
         .stack()
@@ -64,15 +66,15 @@ def correlation_analysis(X, y, output_folder, threshold=0.8):
     strong_corrs = strong_corrs[strong_corrs['Correlation'].abs() >= threshold]
     strong_corrs_path = os.path.join(output_folder, "strong_correlations.csv")
     strong_corrs.to_csv(strong_corrs_path, index=False)
-    log(f"Coppie fortemente correlate salvate in {strong_corrs_path}")
+    log(f"Strongly correlated pairs saved to {strong_corrs_path}")
 
-    # Correlazione col target
+    # Correlation with target
     y_series = pd.Series(y).astype(float)
     target_corr = X_num.apply(lambda col: col.corr(y_series))
     target_corr = target_corr.sort_values(ascending=False).rename("Correlation_with_target")
     target_corr_path = os.path.join(output_folder, "feature_target_correlation.csv")
     target_corr.to_csv(target_corr_path)
-    log(f"Correlazione con il target salvata in {target_corr_path}")
+    log(f"Correlation with target saved to {target_corr_path}")
 
     # Heatmap
     plt.figure(figsize=(10, 8))
@@ -82,9 +84,9 @@ def correlation_analysis(X, y, output_folder, threshold=0.8):
     heatmap_path = os.path.join(output_folder, "correlation_heatmap.png")
     plt.savefig(heatmap_path, bbox_inches='tight')
     plt.close()
-    log(f"Heatmap delle correlazioni salvata in {heatmap_path}")
+    log(f"Correlation heatmap saved to {heatmap_path}")
 
-    # Ritorna risultati principali
+    # Return main results
     return {
         "corr_matrix": corr_matrix,
         "strong_corrs": strong_corrs,
@@ -92,48 +94,47 @@ def correlation_analysis(X, y, output_folder, threshold=0.8):
     }
 
 
-# Rimuove colonne fortemente correlate
+# Drops strongly correlated columns
 def drop_strongly_correlated(X, strong_corrs, categorical_cols, numeric_cols):
     """
-    Rimuove una colonna per ogni coppia di feature fortemente correlate.
-    Sceglie di rimuovere la seconda colonna di ogni coppia.
+    Drops one column from each pair of strongly correlated features.
+    Chooses to remove the second column of each pair.
 
-    Parametri
+    Parameters
     ----------
     X : pd.DataFrame
-        Dataset delle feature
+        Feature dataset
     strong_corrs : pd.DataFrame
-        DataFrame con colonne ['Feature_1', 'Feature_2', 'Correlation']
+        DataFrame with columns ['Feature_1', 'Feature_2', 'Correlation']
     categorical_cols : list
-        Lista delle colonne categoriche
+        List of categorical columns
     numeric_cols : list
-        Lista delle colonne numeriche
+        List of numeric columns
 
-    Ritorna
+    Returns
     -------
     X_clean : pd.DataFrame
-        Dataset senza le colonne fortemente correlate
+        Dataset without the strongly correlated columns
     removed_cols : list
-        Lista delle colonne rimosse
+        List of removed columns
     numeric_cols_new : list
-        Lista colonne numeriche aggiornate
+        Updated numeric column list
     categorical_cols_new : list
-        Lista colonne categoriche aggiornate
+        Updated categorical column list
     """
     removed_cols = []
 
-    # Itera su tutte le coppie fortemente correlate
+    # Iterate over all strongly correlated pairs
     for _, row in strong_corrs.iterrows():
         col_to_remove = row['Feature_2']
         if col_to_remove in X.columns and col_to_remove not in removed_cols:
             removed_cols.append(col_to_remove)
 
-    # Drop colonne
+    # Drop columns
     X_clean = X.drop(columns=removed_cols, errors='ignore')
 
-    # Aggiorna liste di colonne numeriche e categoriche
+    # Update numeric and categorical column lists
     numeric_cols_new = [c for c in numeric_cols if c not in removed_cols]
     categorical_cols_new = [c for c in categorical_cols if c not in removed_cols]
 
     return X_clean, removed_cols, numeric_cols_new, categorical_cols_new
-

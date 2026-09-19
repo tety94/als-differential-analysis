@@ -16,7 +16,7 @@ def compute_shap_values(model, X):
 
 
 # =========================================
-# 2️⃣ Colori per le categorical
+# 2️⃣ Colors for categorical features
 # =========================================
 def get_category_colors(feature_series):
     categories = feature_series.astype(str).unique()
@@ -27,13 +27,13 @@ def get_category_colors(feature_series):
 
 
 # =========================================
-# 3️⃣ Costruisci la LISTA colori (non matrice!)
+# 3️⃣ Build the color LIST (not a matrix!)
 # =========================================
 def build_color_vector(X, cat_idx):
     """
-    Restituisce un dizionario:
+    Returns a dictionary:
     { feature_name : vector_colors }
-    Ogni vettore ha lunghezza n_samples.
+    Each vector has length n_samples.
     """
     color_vectors = {}
     categorical_cols = X.columns[cat_idx]
@@ -52,11 +52,11 @@ def build_color_vector(X, cat_idx):
 
 
 # =========================================
-# 4️⃣ Summary plot UNICO con categorical colorate
+# 4️⃣ SINGLE summary plot with colored categoricals
 # =========================================
 def save_shap_summary_custom(shap_values, X, color_vectors, output_path):
     """
-    Passiamo a SHAP una funzione di lookup dei colori per ogni feature.
+    We pass SHAP a color lookup function for each feature.
     """
     def color_lookup(values, feature_name):
         return color_vectors[feature_name]
@@ -72,11 +72,11 @@ def save_shap_summary_custom(shap_values, X, color_vectors, output_path):
     plt.tight_layout()
     plt.savefig(output_path)
     plt.close()
-    print(f"Salvato summary plot con categorical colorate → {output_path}")
+    print(f"Saved summary plot with colored categoricals → {output_path}")
 
 
 # =========================================
-# 5️⃣ Plot separati per ogni categorical
+# 5️⃣ Separate plots for each categorical feature
 # =========================================
 def plot_shap_categorical_manual(shap_values, X, cat_idx, folder):
     categorical_cols = X.columns[cat_idx]
@@ -115,7 +115,7 @@ def plot_shap_categorical_manual(shap_values, X, cat_idx, folder):
 
 
 # =========================================
-# 6️⃣ Legenda Excel
+# 6️⃣ Excel legend
 # =========================================
 def save_categorical_legend_excel(colors_dict, output_path):
     wb = Workbook()
@@ -130,23 +130,23 @@ def save_categorical_legend_excel(colors_dict, output_path):
         for cat, color in cmap.items():
             cell = ws.cell(row=row, column=1, value=str(cat))
 
-            # converti da (r,g,b,a?) → hex
+            # convert from (r,g,b,a?) → hex
             r, g, b = [int(255 * x) for x in color[:3]]
             hex_color = f"{r:02X}{g:02X}{b:02X}"
 
             cell.fill = PatternFill(start_color=hex_color, end_color=hex_color, fill_type="solid")
             row += 1
 
-        row += 1  # spazio tra le feature
+        row += 1  # spacing between features
 
     wb.save(output_path)
-    print(f"Legenda Excel salvata → {output_path}")
+    print(f"Excel legend saved → {output_path}")
 
 
 
 def build_categorical_color_dict(X, cat_features_idx, cmap_name="tab10"):
     """
-    Genera un dizionario completo:
+    Generates a complete dictionary:
     { colname : { category: color } }
     """
     categorical_cols = X.columns[cat_features_idx]
@@ -162,7 +162,7 @@ def build_categorical_color_dict(X, cat_features_idx, cmap_name="tab10"):
         for i, cat in enumerate(unique_vals):
             color_map[cat] = cmap(i % 10)
 
-        # colore per missing
+        # color for missing
         color_map["missing"] = (0.5, 0.5, 0.5)
 
         colors_dict[col] = color_map
@@ -172,7 +172,7 @@ def build_categorical_color_dict(X, cat_features_idx, cmap_name="tab10"):
 
 
 # =========================================
-# 7️⃣ Funzione unica
+# 7️⃣ Single entry-point function
 # =========================================
 def generate_shap_plots(model, X, cat_features_idx, folder):
     os.makedirs(folder, exist_ok=True)
@@ -181,9 +181,9 @@ def generate_shap_plots(model, X, cat_features_idx, folder):
     _, shap_values = compute_shap_values(model, X)
     filename = os.path.join(folder, "shap_summary_all.png")
 
-    # Colori uniformi
+    # Uniform colors
     color_vectors = build_color_vector(X, cat_features_idx)
-    # Summary SHAP unico
+    # Single SHAP summary
     save_shap_summary_custom(
         shap_values,
         X,
@@ -191,10 +191,10 @@ def generate_shap_plots(model, X, cat_features_idx, folder):
         filename
     )
 
-    # Plot extra per categorical
+    # Extra plots for categorical features
     colors_dict = plot_shap_categorical_manual(shap_values, X, cat_features_idx, folder)
 
-    # Legenda Excel
+    # Excel legend
     save_categorical_legend_excel(colors_dict, os.path.join(folder, "shap_legend.xlsx"))
 
 def shap_summary_custom(shap_values, X, colors_dict, output_path=None):
@@ -203,7 +203,7 @@ def shap_summary_custom(shap_values, X, colors_dict, output_path=None):
 
     plt.figure(figsize=(10, 0.35*n_features + 2))
 
-    # Ordina per importanza media SHAP
+    # Sort by mean SHAP importance
     mean_abs_shap = np.abs(shap_values).mean(axis=0)
     order = np.argsort(mean_abs_shap)[::-1]
 
@@ -214,65 +214,65 @@ def shap_summary_custom(shap_values, X, colors_dict, output_path=None):
 
         y = np.ones(len(shap_f))*pos
 
-        # 🔵 Se è numerica → gradiente (tipo SHAP)
+        # 🔵 If numeric → gradient (SHAP-style)
         if np.issubdtype(x_f.dtype, np.number):
             colors = plt.cm.coolwarm(
                 (x_f - x_f.min()) / (x_f.max() - x_f.min() + 1e-9)
             )
 
-        # 🟢 Se è categoriale → usa colori_dict
+        # 🟢 If categorical → use colors_dict
         else:
             colors = x_f.map(colors_dict.get(f, {}))
-            colors = colors.fillna("#808080")  # eventuali non mappati
+            colors = colors.fillna("#808080")  # any unmapped values
 
         plt.scatter(shap_f, y, color=colors, s=18, alpha=0.8, edgecolor='none')
 
     plt.yticks(range(n_features), feature_names[order])
     plt.xlabel("SHAP value")
-    plt.title("Custom SHAP Summary Plot (colori categoriali inclusi)")
+    plt.title("Custom SHAP Summary Plot (categorical colors included)")
     plt.tight_layout()
 
     if output_path:
         plt.savefig(output_path, dpi=200)
-        print(f"Plot salvato in {output_path}")
+        print(f"Plot saved to {output_path}")
 
     plt.show()
 
 
 def save_shap_values_csv(model, X, output_path="shap_values.csv"):
     """
-    Calcola i valori SHAP per ogni campione e li salva in un CSV.
+    Computes SHAP values for each sample and saves them to a CSV.
 
     Parameters
     ----------
     model : fitted model
-        Il modello già allenato, compatibile con shap.TreeExplainer
-    X : pd.DataFrame o np.array
-        Il dataset usato per calcolare i valori shap
-    cat_features_idx : list o None
-        Indici delle variabili categoriche (serve solo per CatBoost)
+        The already-trained model, compatible with shap.TreeExplainer
+    X : pd.DataFrame or np.array
+        The dataset used to compute the SHAP values
+    cat_features_idx : list or None
+        Indices of the categorical variables (only needed for CatBoost)
     output_path : str
-        Percorso del CSV di output
+        Output CSV path
     """
 
     # SHAP explainer
     try:
         explainer = shap.TreeExplainer(model)
     except Exception:
-        explainer = shap.KernelExplainer(model.predict, X.sample(100))  # fallback molto più lento
+        explainer = shap.KernelExplainer(model.predict, X.sample(100))  # much slower fallback
 
     # Compute SHAP values
     shap_values = explainer.shap_values(X)
 
-    # Se il modello è binario, shap_values è una lista (prendo la classe 1)
+    # If the model is binary, shap_values is a list (take class 1)
     if isinstance(shap_values, list):
         shap_values = shap_values[1]
 
-    # Converto in DataFrame
+    # Convert to DataFrame
     shap_df = pd.DataFrame(shap_values, columns=X.columns)
 
-    # Salvo
+    # Save
     shap_df.to_csv(output_path, index=False)
 
-    print(f"SHAP values salvati in: {output_path}")
+    print(f"SHAP values saved to: {output_path}")
     return shap_df

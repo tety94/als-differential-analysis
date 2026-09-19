@@ -16,44 +16,45 @@ def compare_models_to_baseline(
         model_output_folder=None
 ):
     """
-    Confronta i modelli con la baseline e salva i modelli che la superano.
+    Compares the models against the baseline and saves the models that
+    beat it.
 
     Parameters
     -model_results : dict or pd.DataFrame
-        Risultati dei modelli dal training (accuracy, f1, auc, precision, recall..)
+        Model results from training (accuracy, f1, auc, precision, recall..)
     baseline : dict
-        Metriche della baseline per ogni visit
+        Baseline metrics for each visit
     trained_pipelines : dict
-        Pipeline sklearn già addestrate (model_name → pipeline)
+        Already-trained sklearn pipelines (model_name → pipeline)
     output_folder : str
-        Cartella per salvare il CSV finale
+        Folder to save the final CSV
     key_metric : str
-        Metrica principale per decidere se salvare il modello
+        Main metric used to decide whether to save the model
     model_output_folder : str
-        Cartella dove salvare i modelli .joblib---------
+        Folder where to save the .joblib models
 
 
     Returns
     -------
     pd.DataFrame
-        Tabella completa con confronti modello vs baseline
+        Full table comparing model vs baseline
     """
 
-    logging.info("🔍 Avvio confronto modelli vs baseline")
+    logging.info("🔍 Starting model vs baseline comparison")
 
-    # Converti dict → DataFrame se necessario
+    # Convert dict → DataFrame if needed
     if isinstance(model_results, dict):
         model_results = pd.DataFrame.from_dict(model_results, orient="index")
 
     records = []
 
-    # Apertura sessione SQL
+    # Open SQL session
     Session = sessionmaker(bind=engine)
 
     for visit, baseline_metrics in baseline.items():
 
-        print(f"\n===== Confronto con baseline: {visit} =====")
-        logging.info(f"Confronto con baseline: {visit}")
+        print(f"\n===== Comparison against baseline: {visit} =====")
+        logging.info(f"Comparison against baseline: {visit}")
 
         for model_name, metrics in model_results.iterrows():
 
@@ -62,16 +63,16 @@ def compare_models_to_baseline(
                 for metric in baseline_metrics.keys()
             }
 
-            # Log risultati prestazionali
-            print(f"\n--- Modello: {model_name} ---")
-            logging.info(f"--- Modello: {model_name} ---")
+            # Log performance results
+            print(f"\n--- Model: {model_name} ---")
+            logging.info(f"--- Model: {model_name} ---")
 
             for metric, beat in comparison.items():
-                status = "✅ supera" if beat else "❌ NON supera"
+                status = "✅ beats" if beat else "❌ does NOT beat"
                 print(f"{metric}: {metrics[metric]:.4f} vs baseline {baseline_metrics[metric]:.4f} -> {status}")
                 logging.info(f"{metric}: {metrics[metric]:.4f} vs baseline {baseline_metrics[metric]:.4f} -> {status}")
 
-            # Record per CSV finale
+            # Record for the final CSV
             records.append({
                 "visit": visit,
                 "model": model_name,
@@ -79,7 +80,7 @@ def compare_models_to_baseline(
                 **{f"{k}_beat_baseline": v for k, v in comparison.items()}
             })
 
-            # 🎯 Salvataggio modello se supera baseline sulla metrica chiave
+            # 🎯 Save the model if it beats the baseline on the key metric
             if (
                 trained_pipelines is not None and
                 model_name in trained_pipelines and
@@ -89,7 +90,7 @@ def compare_models_to_baseline(
 
                     os.makedirs(model_output_folder, exist_ok=True)
 
-                    # Recupero ultima versione del modello
+                    # Retrieve the latest model version
                     session = Session()
                     last_model = (
                         session.query(Model)
@@ -103,19 +104,19 @@ def compare_models_to_baseline(
 
                     model_path = os.path.join(model_output_folder, f"{model_name}_{version}.joblib")
 
-                    # Salvataggio del modello
+                    # Save the model
                     joblib.dump(trained_pipelines[model_name], model_path)
 
-                    print(f"💾 Modello {model_name} salvato in {model_path}")
-                    logging.info(f"Modello {model_name} salvato in {model_path}")
+                    print(f"💾 Model {model_name} saved to {model_path}")
+                    logging.info(f"Model {model_name} saved to {model_path}")
 
-    # 🧾 DataFrame finale
+    # 🧾 Final DataFrame
     comparison_df = pd.DataFrame(records)
 
     if output_folder:
         csv_path = os.path.join(output_folder, "model_vs_baseline.csv")
         comparison_df.to_csv(csv_path, index=False)
-        print(f"\n💾 Confronto modelli vs baseline salvato in {csv_path}")
-        logging.info(f"Confronto modelli vs baseline salvato in {csv_path}")
+        print(f"\n💾 Model vs baseline comparison saved to {csv_path}")
+        logging.info(f"Model vs baseline comparison saved to {csv_path}")
 
     return comparison_df

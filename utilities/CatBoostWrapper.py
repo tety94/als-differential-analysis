@@ -13,7 +13,7 @@ class CatBoostWrapper(BaseEstimator, ClassifierMixin):
         self.model_ = None
 
     def fit(self, X, y, **fit_params):
-        # gestione cat_features passati da fit() o dall'__init__
+        # handle cat_features passed via fit() or via __init__
         cat_features = fit_params.get("cat_features", self.cat_features)
 
         self.model_ = CatBoostClassifier(
@@ -25,7 +25,7 @@ class CatBoostWrapper(BaseEstimator, ClassifierMixin):
 
         self.model_.fit(X, y, cat_features=cat_features)
 
-        # 🔥 necessario per sklearn
+        # 🔥 required by sklearn
         self.classes_ = np.unique(y)
 
         return self

@@ -4,21 +4,21 @@ from config import csv_path, target_col, t_1_visit
 import logging
 
 def load_data(categorical_columns,numerical_cols):
-    logging.info(f"Caricamento dati da {csv_path}")
+    logging.info(f"Loading data from {csv_path}")
     df = pd.read_csv(csv_path, sep=',', engine='python')
-    logging.info(f"Shape originale: {df.shape}")
+    logging.info(f"Original shape: {df.shape}")
 
     if target_col not in df.columns:
-        raise ValueError(f"Colonna target '{target_col}' non trovata nel CSV")
+        raise ValueError(f"Target column '{target_col}' not found in CSV")
 
-    # Binarizzazione target
+    # Target binarization
     df = df[~df[target_col].isna()].copy()
     df[target_col] = pd.to_numeric(df[target_col], errors='coerce')
     df = df.dropna(subset=[target_col])
     df[target_col] = (df[target_col] != 0).astype(int)
     df[target_col] = df[target_col].apply(lambda x: 0 if int(x) == 0 else 1)
 
-    # Binarizzazione target_medici_1_visit
+    # target_medici_1_visit binarization
     df = df[~df[t_1_visit].isna()].copy()
     df[t_1_visit] = pd.to_numeric(df[t_1_visit], errors='coerce')
     df = df.dropna(subset=[t_1_visit])
@@ -29,7 +29,7 @@ def load_data(categorical_columns,numerical_cols):
 
     df = df[~df['site_of_onset'].isin([6,7])]
 
-    # nel nostro dataset SLA = 0, altre malattie > 0
+    # in our dataset ALS = 0, other diseases > 0
     df[target_col] = np.where(df[target_col] == 0, 1, 0)
     df[t_1_visit] = np.where(df[t_1_visit] == 0, 1, 0)
 
